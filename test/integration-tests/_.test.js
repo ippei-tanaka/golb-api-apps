@@ -24,9 +24,9 @@ describe('Integration Tests', function ()
     {
         require('./admin-home')();
         require('./admin-login')();
-        //require('./admin-users')();
-        //require('./admin-categories')();
-        //require('./admin-posts')();
-        //require('./admin-setting')();
+        require('./admin-users')();
+        require('./admin-categories')();
+        require('./admin-posts')();
+        require('./admin-setting')();
     });
 });

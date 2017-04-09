@@ -1,42 +1,40 @@
-import co from 'co';
 import {expect} from 'chai';
-import httpRequest from '../http-request';
-import {login, logout, ADMIN_URL} from './_setup';
+import HttpClient from '../http-client';
+import {admin} from './_data';
 
-export default function ()
+export default () =>
 {
     describe('/setting', () =>
     {
-        beforeEach('login', () => login());
-        afterEach('logout', () => logout());
+        const config = require("../../src/config");
 
-        it('should set a number of posts per a page to the setting', (done) =>
+        let client;
+
+        beforeEach(() =>
         {
-            co(function* ()
-            {
-                yield httpRequest.put(`${ADMIN_URL}/setting`, {
-                    posts_per_page: 15
-                });
-                const setting = yield httpRequest.get(`${ADMIN_URL}/setting`);
-                expect(setting.posts_per_page).to.equal(15);
-                done();
-            }).catch((e) =>
-            {
-                done(e);
+            client = new HttpClient({
+                port: config.getValue('webPort'),
+                hostname: config.getValue('webHost'),
+                pathbase: config.getValue('adminApiRoot')
             });
         });
 
-        it('should return the setting with the default value', (done) =>
+        beforeEach('login', () => client.post("/login", admin));
+        afterEach('logout', () => client.get("/logout"));
+
+        it('should set a number of posts per a page to the setting', async () =>
         {
-            co(function* ()
-            {
-                const setting = yield httpRequest.get(`${ADMIN_URL}/setting`);
-                expect(setting.posts_per_page).to.equal(1);
-                done();
-            }).catch((e) =>
-            {
-                done(e);
+            await client.put(`/setting`, {
+                posts_per_page: 15
             });
+            const setting = await client.get(`/setting`);
+            expect(setting.posts_per_page).to.equal(15);
+        });
+
+        it('should return the setting with the default value', async () =>
+        {
+            const setting = await client.get(`/setting`);
+            expect(setting.posts_per_page).to.equal(1);
         });
     });
 };

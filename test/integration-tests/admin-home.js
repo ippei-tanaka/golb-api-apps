@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import HttpClient from '../http-client';
 
-export default function ()
+export default () =>
 {
     describe('/home', () =>
     {

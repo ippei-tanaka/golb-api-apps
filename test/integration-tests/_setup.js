@@ -10,7 +10,3 @@ weblogjs.init(settings);
 mongoDriver.setUp({
     database: config.getValue('dbName')
 });
-
-//export const ADMIN_URL = `http://${webHost}:${webPort}${adminApiRoot}`;
-//export const login = () => httpRequest.post(`${ADMIN_URL}/login`, admin);
-//export const logout = () => httpRequest.get(`${ADMIN_URL}/logout`);

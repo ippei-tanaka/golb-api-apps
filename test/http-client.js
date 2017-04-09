@@ -50,12 +50,15 @@ export default class HttpClient
         const options = {
             method,
             uri,
-            jar: this._jar
+            jar: this._jar,
+            headers: {
+                "content-type": "application/json"
+            }
         };
 
         if (data)
         {
-            options.form = data;
+            options.body = JSON.stringify(data);
         }
 
         return new Promise((resolve, reject) => request(options, (error, response, body) =>
@@ -67,7 +70,7 @@ export default class HttpClient
 
             reject({
                 statusCode: response.statusCode,
-                body
+                body: JSON.parse(body)
             });
         }));
     }
