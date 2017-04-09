@@ -1,4 +1,3 @@
-import co from 'co';
 import validator from 'validator';
 import compareHashedStrings from '../utilities/compare-hashed-strings';
 import generateHash from '../utilities/generate-hash';
@@ -103,7 +102,7 @@ const schema = new UserSchema();
 
 eventHub.on(schema.BEFORE_SAVED, modifyDateData);
 
-const onUpdate = ({errors, values, initialValues}) => co(function* ()
+const onUpdate = async ({errors, values, initialValues}) =>
 {
     const _values = Object.assign({}, values);
     const _errors = Object.assign({}, errors);
@@ -139,7 +138,7 @@ const onUpdate = ({errors, values, initialValues}) => co(function* ()
 
         if (values.hasOwnProperty(OLD_PASSWORD) && values[OLD_PASSWORD] !== "")
         {
-            const result = yield compareHashedStrings(values[OLD_PASSWORD], initialValues[HASHED_PASSWORD]);
+            const result = await compareHashedStrings(values[OLD_PASSWORD], initialValues[HASHED_PASSWORD]);
             if (!result)
             {
                 _errors[OLD_PASSWORD] = ["The current password sent is not correct."];
@@ -148,7 +147,7 @@ const onUpdate = ({errors, values, initialValues}) => co(function* ()
 
         if (Object.keys(_errors).length === 0)
         {
-            _values[HASHED_PASSWORD] = yield generateHash(values[PASSWORD]);
+            _values[HASHED_PASSWORD] = await generateHash(values[PASSWORD]);
         }
     }
     else
@@ -163,9 +162,9 @@ const onUpdate = ({errors, values, initialValues}) => co(function* ()
         values: _values,
         errors: _errors
     };
-});
+};
 
-const onCreate = ({errors, values, initialValues}) => co(function* ()
+const onCreate = async ({errors, values, initialValues}) =>
 {
     const _values = Object.assign({}, values);
 
@@ -178,11 +177,11 @@ const onCreate = ({errors, values, initialValues}) => co(function* ()
         || !Array.isArray(errors[PASSWORD])
         || errors[PASSWORD].length === 0)
     {
-        _values[HASHED_PASSWORD] = yield generateHash(values[PASSWORD]);
+        _values[HASHED_PASSWORD] = await generateHash(values[PASSWORD]);
     }
 
     return {values: _values};
-});
+};
 
 eventHub.on(schema.BEFORE_SAVED, ({errors, values, initialValues}) =>
 {

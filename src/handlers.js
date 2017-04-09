@@ -9,7 +9,7 @@ export const isLoggedIn = (request, response, next) =>
     if (request.isAuthenticated())
         return next();
 
-    response.sendStatus(401);
+    response.type('json').status(401).json({});
 };
 
 export const isLoggedOut = (request, response, next) =>
@@ -17,7 +17,7 @@ export const isLoggedOut = (request, response, next) =>
     if (!request.isAuthenticated())
         return next();
 
-    response.sendStatus(401);
+    response.type('json').status(401).json({});
 };
 
 export const successHandler = (response, obj, code = 200) =>

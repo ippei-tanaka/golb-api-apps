@@ -2,7 +2,8 @@ import express from 'express';
 
 let server;
 
-export const init = (values) => {
+export const init = (values) =>
+{
     const config = require('./config');
     config.setValues(values);
 };
@@ -47,18 +48,20 @@ export const start = async () =>
 
     // Start a web server
 
-    const promise = new Promise((resolve, reject) => {
+    const promise = new Promise((resolve, reject) =>
+    {
         server = app.listen(
             config.getValue('webPort'),
             config.getValue('webHost'),
-            (e) => {
+            (e) =>
+            {
                 if (e) return reject(e);
                 resolve();
             }
         );
     });
 
-    console.log(`WeblogJS started.`);
+    console.log("WeblogJS has started.");
     //console.log(`Public Site: http://${config.getValue('webHost')}:${config.getValue('webPort')}${config.getValue('publicSiteRoot')}`);
     console.log(`Admin API: http://${config.getValue('webHost')}:${config.getValue('webPort')}${config.getValue('adminApiRoot')}`);
 
@@ -66,14 +69,11 @@ export const start = async () =>
 
 };
 
-export const stop = () => new Promise((resolve, reject) =>
+export const stop = async () =>
 {
-    if (server) {
-        server.close((e) => {
-            if (e) return reject(e);
-            resolve();
-        });
+    if (server)
+    {
+        console.log("WeblogJS has stopped.");
+        await server.close();
     }
-});
-
-start().then(console.log).catch(console.error);
+};

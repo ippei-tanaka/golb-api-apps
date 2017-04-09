@@ -13,6 +13,8 @@
                 ]
             }
         ],
-        "add-module-exports"
+        "add-module-exports",
+        "transform-regenerator",
+        "transform-runtime"
     ]
 }
