@@ -21,7 +21,7 @@
         "passport-local": "^1.0.0",
         "pluralize": "^4.0.0",
         "request": "^2.81.0",
-        "simple-odm": "file:../simple-odm",
+        "simple-odm": "^0.4.3",
         "validator": "^7.0.0"
     },
     "devDependencies": {

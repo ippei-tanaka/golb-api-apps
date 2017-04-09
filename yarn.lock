@@ -1858,8 +1858,9 @@ signal-exit@^3.0.0:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.2.tgz#b5fdc08f1287ea1178628e415e25132b73646c6d"
 
-"simple-odm@file:../simple-odm":
-  version "0.4.2"
+simple-odm@^0.4.3:
+  version "0.4.3"
+  resolved "https://registry.yarnpkg.com/simple-odm/-/simple-odm-0.4.3.tgz#00cd8006e12f7ae3d1130436ff831423fc48ae5d"
   dependencies:
     babel-plugin-transform-runtime "^6.9.0"
     babel-runtime "^6.9.2"
