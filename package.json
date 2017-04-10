@@ -1,11 +1,14 @@
 {
     "name": "my-blog-server",
     "version": "1.0.0",
-    "main": "index.js",
+    "main": "lib/app.js",
     "license": "MIT",
     "scripts": {
         "dev": "babel-node src/app.js",
-        "test": "mocha $(find test -name '*.test.js') --compilers js:babel-core/register"
+        "test": "mocha $(find test -name '*.test.js') --compilers js:babel-core/register",
+        "compile": "NODE_ENV=production npm-run-all compile:*",
+        "compile:clear": "rimraf lib",
+        "compile:build": "babel ./src --out-dir lib --copy-files --ignore bundle"
     },
     "dependencies": {
         "babel-plugin-transform-regenerator": "^6.22.0",
@@ -17,10 +20,12 @@
         "express-session": "^1.15.2",
         "mocha": "^3.2.0",
         "mongodb": "^2.2.25",
+        "npm-run-all": "^4.0.2",
         "passport": "^0.3.2",
         "passport-local": "^1.0.0",
         "pluralize": "^4.0.0",
         "request": "^2.81.0",
+        "rimraf": "^2.6.1",
         "simple-odm": "^0.4.3",
         "validator": "^7.0.0"
     },
