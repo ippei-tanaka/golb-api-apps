@@ -1,6 +1,4 @@
 import express from 'express';
-import AdminApiApp from './admin-api-app';
-import PublicApiApp from './public-api-app';
 
 let server;
 
@@ -13,8 +11,8 @@ export const init = (values) =>
 export const start = async () =>
 {
     const config = require('./config');
-    const adminApiApp = new AdminApiApp({sessionSecret: config.getValue('sessionSecret')});
-    const publicSiteApp = new PublicApiApp();
+    const adminApiApp = require('./admin-app');
+    const publicSiteApp = require('./public-app');
     const UserModel = require('./models/user-model');
     const app = express();
 

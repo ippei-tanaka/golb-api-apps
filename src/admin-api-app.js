@@ -1,4 +1,4 @@
-import express from 'express';
+import express, {Router} from "express";
 import pluralize from 'pluralize';
 import PassportManager from './passport-manager';
 import UserModel from './models/user-model';
@@ -7,12 +7,12 @@ import PostModel from './models/post-model';
 import SettingModel from './models/setting-model';
 import {ObjectID} from 'mongodb';
 import {successHandler, errorHandler, parseParameters, isLoggedIn, isLoggedOut} from './handlers';
-//import fs from 'fs';
-//import path from 'path';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import expressSession from 'express-session';
-import config from './config';
+//import fs from 'fs';
+//import path from 'path';
+
 
 const addRoutesForCrudOperations = (Model, app, filter) =>
 {
@@ -86,7 +86,6 @@ const addRoutesForHome = (app) =>
     return app;
 };
 
-
 const addRoutesForUser = (app, filter) =>
 {
     app.get(`/users/me`, filter, (request, response) => (async () =>
@@ -118,7 +117,6 @@ const addRoutesForUser = (app, filter) =>
     return app;
 };
 
-
 const addRoutesForSetting = (app, filter) =>
 {
     app.get(`/setting`, filter, (request, response) => (async () =>
@@ -135,6 +133,8 @@ const addRoutesForSetting = (app, filter) =>
 
     return app;
 };
+
+
 /*
 
 const addRoutesForThemes = (app, filter) =>
@@ -185,28 +185,39 @@ const addRoutesForThemes = (app, filter) =>
 };
 */
 
-let app = express();
+export default class AdminApiApp {
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
-app.use(cookieParser());
-app.use(expressSession({
-    secret: config.getValue('sessionSecret'),
-    resave: true,
-    saveUninitialized: true
-}));
+    constructor ({sessionSecret})
+    {
+        const app = express();
 
-app.use(PassportManager.passport.initialize());
-app.use(PassportManager.passport.session());
+        app.use(bodyParser.json());
+        app.use(bodyParser.urlencoded({extended: false}));
+        app.use(cookieParser());
+        app.use(expressSession({
+            secret: sessionSecret,
+            resave: true,
+            saveUninitialized: true
+        }));
 
-// The order of those functions matters.
-app = addRoutesForHome(app);
-app = addRoutesForAuth(app, isLoggedIn, isLoggedOut, PassportManager.localAuth);
-app = addRoutesForUser(app, isLoggedIn);
-app = addRoutesForCrudOperations(UserModel, app, isLoggedIn);
-app = addRoutesForCrudOperations(CategoryModel, app, isLoggedIn);
-app = addRoutesForCrudOperations(PostModel, app, isLoggedIn);
-app = addRoutesForSetting(app, isLoggedIn);
-//adminApiApp = addRoutesForThemes(adminApiApp, isLoggedIn);
+        app.use(PassportManager.passport.initialize());
+        app.use(PassportManager.passport.session());
 
-export default app;
+        let router = new Router();
+
+        // The order of those functions matters.
+        router = addRoutesForHome(router);
+        router = addRoutesForAuth(router, isLoggedIn, isLoggedOut, PassportManager.localAuth);
+        router = addRoutesForUser(router, isLoggedIn);
+        router = addRoutesForCrudOperations(UserModel, router, isLoggedIn);
+        router = addRoutesForCrudOperations(CategoryModel, router, isLoggedIn);
+        router = addRoutesForCrudOperations(PostModel, router, isLoggedIn);
+        router = addRoutesForSetting(router, isLoggedIn);
+        //router = addRoutesForThemes(router, isLoggedIn);
+
+        app.use(router);
+
+        return app;
+    }
+
+};
