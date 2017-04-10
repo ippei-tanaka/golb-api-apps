@@ -12,14 +12,12 @@ export const start = async () =>
 {
     const config = require('./config');
     const adminApiApp = require('./admin-app');
-    //const publicSiteApp = require('./public-app/app');
+    const publicSiteApp = require('./public-app');
     const UserModel = require('./models/user-model');
     const app = express();
 
     app.use(config.getValue('adminApiRoot'), adminApiApp);
-
-    //app.use(config.getValue('adminSiteRoot'), adminSiteApp);
-    //app.use(config.getValue('publicSiteRoot'), publicSiteApp);
+    app.use(config.getValue('publicApiRoot'), publicSiteApp);
 
     // Create an admin user if it doesn't exist.
 
@@ -62,7 +60,7 @@ export const start = async () =>
     });
 
     console.log("WeblogJS has started.");
-    //console.log(`Public Site: http://${config.getValue('webHost')}:${config.getValue('webPort')}${config.getValue('publicSiteRoot')}`);
+    console.log(`Public API: http://${config.getValue('webHost')}:${config.getValue('webPort')}${config.getValue('publicApiRoot')}`);
     console.log(`Admin API: http://${config.getValue('webHost')}:${config.getValue('webPort')}${config.getValue('adminApiRoot')}`);
 
     return await promise;

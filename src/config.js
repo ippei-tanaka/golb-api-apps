@@ -25,13 +25,21 @@ Object.defineProperty(config, 'adminApiRoot', {
     get: () => "/admin-api"
 });
 
+/*
 Object.defineProperty(config, 'adminSiteRoot', {
     get: () => "/admin"
 });
+*/
 
+Object.defineProperty(config, 'publicApiRoot', {
+    get: () => "/public-api"
+});
+
+/*
 Object.defineProperty(config, 'publicSiteRoot', {
     get: () => "/"
 });
+*/
 
 export default Object.freeze({
 
