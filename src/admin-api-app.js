@@ -5,14 +5,12 @@ import UserModel from './models/user-model';
 import CategoryModel from './models/category-model';
 import PostModel from './models/post-model';
 import SettingModel from './models/setting-model';
+import setUpDbConnection from './models/setup-db-connection';
 import {ObjectID} from 'mongodb';
 import {successHandler, errorHandler, parseParameters, isLoggedIn, isLoggedOut} from './handlers';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import expressSession from 'express-session';
-//import fs from 'fs';
-//import path from 'path';
-
 
 const addRoutesForCrudOperations = (Model, app, filter) =>
 {
@@ -187,8 +185,10 @@ const addRoutesForThemes = (app, filter) =>
 
 export default class AdminApiApp {
 
-    constructor ({sessionSecret})
+    constructor ({sessionSecret, dbHost, dbPort, dbName})
     {
+        setUpDbConnection({dbHost, dbPort, dbName});
+
         const app = express();
 
         app.use(bodyParser.json());

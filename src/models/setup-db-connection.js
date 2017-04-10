@@ -1,8 +1,8 @@
-import { mongoDriver } from 'simple-odm'
-import config from '../config';
+import {mongoDriver} from 'simple-odm'
 
-mongoDriver.setUp({
-    host: config.getValue('dbHost'),
-    port: config.getValue('dbPort'),
-    database: config.getValue('dbName')
-});
+export default ({dbHost, dbPort, dbName}) =>
+    mongoDriver.setUp({
+        host: dbHost,
+        port: dbPort,
+        database: dbName
+    });

@@ -2,8 +2,6 @@ import { MongoModel } from 'simple-odm';
 import schema from './user-schema';
 import compareHashedStrings from '../utilities/compare-hashed-strings';
 
-require('./setup-db-connection');
-
 export default class UserModel extends MongoModel {
 
     static get name () {

@@ -13,8 +13,8 @@ export const init = (values) =>
 export const start = async () =>
 {
     const config = require('./config');
-    const adminApiApp = new AdminApiApp({sessionSecret: config.getValue('sessionSecret')});
-    const publicSiteApp = new PublicApiApp();
+    const adminApiApp = new AdminApiApp(config.getValues());
+    const publicSiteApp = new PublicApiApp(config.getValues());
     const UserModel = require('./models/user-model');
     const app = express();
 

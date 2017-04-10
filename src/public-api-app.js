@@ -5,6 +5,7 @@ import UserModel from './models/user-model';
 import CategoryModel from './models/category-model';
 import PostModel from './models/post-model';
 import SettingModel from './models/setting-model';
+import setUpDbConnection from './models/setup-db-connection';
 import urlResolver from "./utilities/url-resolver";
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
@@ -269,9 +270,11 @@ router.get("*", (request, response) => co(function* ()
 
 export default class PublicApiApp {
 
-    constructor ()
+    constructor ({dbHost, dbPort, dbName})
     {
-        let app = express();
+        setUpDbConnection({dbHost, dbPort, dbName});
+
+        const app = express();
 
         app.use(bodyParser.json());
         app.use(bodyParser.urlencoded({extended: false}));
