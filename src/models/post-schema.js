@@ -1,9 +1,12 @@
 import validator from 'validator';
 import { types, eventHub } from 'simple-odm';
-import { WeblogJsSchema, modifyDateData } from './weblogjs-schema';
+import { SuperSchema, updateTimestampFields } from './super-schema';
 
-const schema = new WeblogJsSchema({
-    name: 'post', paths: {
+const schema = new SuperSchema({
+
+    name: 'post',
+
+    paths: {
 
         title: {
             required: true,
@@ -116,6 +119,6 @@ const schema = new WeblogJsSchema({
     }
 });
 
-eventHub.on(schema.BEFORE_SAVED, modifyDateData);
+eventHub.on(schema.BEFORE_SAVED, updateTimestampFields);
 
 export default schema;

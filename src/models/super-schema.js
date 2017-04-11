@@ -12,7 +12,7 @@ const commonPaths = {
 
 };
 
-export class WeblogJsSchema extends MongoSchema {
+export class SuperSchema extends MongoSchema {
 
     /**
      * @override
@@ -25,7 +25,7 @@ export class WeblogJsSchema extends MongoSchema {
 
 }
 
-export const modifyDateData = ({values}) =>
+export const updateTimestampFields = ({values}) =>
 {
     const _values = Object.assign({}, values);
 

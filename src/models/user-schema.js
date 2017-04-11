@@ -2,83 +2,7 @@ import validator from 'validator';
 import compareHashedStrings from '../utilities/compare-hashed-strings';
 import generateHash from '../utilities/generate-hash';
 import { types, eventHub } from 'simple-odm';
-import { WeblogJsSchema, modifyDateData } from './weblogjs-schema';
-
-const paths = {
-
-    email: {
-        unique: true,
-        required: true,
-        type: types.String,
-        sanitize: (value) => validator.normalizeEmail(value),
-        validate: function* (value)
-        {
-            if (!validator.isEmail(value))
-            {
-                yield `A ${this.name} should be a valid email.`;
-            }
-        }
-    },
-
-    password: {
-        required: ['created'],
-        type: types.String,
-        projected: false,
-        validate: function* (value)
-        {
-            const range = {min: 8, max: 16};
-            if (!validator.isLength(value, range))
-            {
-                yield `A ${this.name} should be between ${range.min} and ${range.max} characters.`;
-            }
-
-            if (!validator.matches(value, /^[a-zA-Z0-9#!@%&\*]*$/))
-            {
-                yield `Only alphabets, numbers and some symbols (#, !, @, %, &, *) are allowed for a ${this.name}.`;
-            }
-        }
-    },
-
-    display_name: {
-        display_name: "display name",
-        required: true,
-        type: types.String,
-        sanitize: (value) => value.trim(),
-        validate: function* (value)
-        {
-            const range = {min: 1, max: 20};
-            if (!validator.isLength(value, range))
-            {
-                yield `A ${this.name} should be between ${range.min} and ${range.max} characters.`;
-            }
-
-            if (!validator.matches(value, /^[a-zA-Z0-9_\-#!@%&\* ]*$/))
-            {
-                yield `Only alphabets, numbers, spaces and some symbols (_, -, #, !, @, %, &, *) are allowed for a ${this.name}.`;
-            }
-        }
-    },
-
-    slug: {
-        unique: true,
-        required: true,
-        type: types.String,
-        sanitize: (value) => value.trim(),
-        validate: function* (value)
-        {
-            const range = {min: 1, max: 200};
-            if (!validator.isLength(value, range))
-            {
-                yield `A ${this.name} should be between ${range.min} and ${range.max} characters.`;
-            }
-
-            if (!validator.matches(value, /^[a-zA-Z0-9\-_]*$/))
-            {
-                yield `Only alphabets, numbers and some symbols (-, _) are allowed for a ${this.name}.`;
-            }
-        }
-    }
-};
+import { SuperSchema, updateTimestampFields } from './super-schema';
 
 const HASHED_PASSWORD = "hashed_password";
 const OLD_PASSWORD = "old_password";
@@ -86,21 +10,88 @@ const PASSWORD_UPDATE = "password_update";
 const PASSWORD = "password";
 const PASSWORD_CONFIRMED = "password_confirmed";
 
-class UserSchema extends WeblogJsSchema {
+const schema = new SuperSchema({
 
-    /**
-     * @override
-     */
-    constructor ()
-    {
-        super({name: 'user', paths});
+    name: 'user',
+
+    paths: {
+
+        email: {
+            unique: true,
+            required: true,
+            type: types.String,
+            sanitize: (value) => validator.normalizeEmail(value),
+            validate: function* (value)
+            {
+                if (!validator.isEmail(value))
+                {
+                    yield `A ${this.name} should be a valid email.`;
+                }
+            }
+        },
+
+        password: {
+            required: ['created'],
+            type: types.String,
+            projected: false,
+            validate: function* (value)
+            {
+                const range = {min: 8, max: 16};
+                if (!validator.isLength(value, range))
+                {
+                    yield `A ${this.name} should be between ${range.min} and ${range.max} characters.`;
+                }
+
+                if (!validator.matches(value, /^[a-zA-Z0-9#!@%&\*]*$/))
+                {
+                    yield `Only alphabets, numbers and some symbols (#, !, @, %, &, *) are allowed for a ${this.name}.`;
+                }
+            }
+        },
+
+        display_name: {
+            display_name: "display name",
+            required: true,
+            type: types.String,
+            sanitize: (value) => value.trim(),
+            validate: function* (value)
+            {
+                const range = {min: 1, max: 20};
+                if (!validator.isLength(value, range))
+                {
+                    yield `A ${this.name} should be between ${range.min} and ${range.max} characters.`;
+                }
+
+                if (!validator.matches(value, /^[a-zA-Z0-9_\-#!@%&\* ]*$/))
+                {
+                    yield `Only alphabets, numbers, spaces and some symbols (_, -, #, !, @, %, &, *) are allowed for a ${this.name}.`;
+                }
+            }
+        },
+
+        slug: {
+            unique: true,
+            required: true,
+            type: types.String,
+            sanitize: (value) => value.trim(),
+            validate: function* (value)
+            {
+                const range = {min: 1, max: 200};
+                if (!validator.isLength(value, range))
+                {
+                    yield `A ${this.name} should be between ${range.min} and ${range.max} characters.`;
+                }
+
+                if (!validator.matches(value, /^[a-zA-Z0-9\-_]*$/))
+                {
+                    yield `Only alphabets, numbers and some symbols (-, _) are allowed for a ${this.name}.`;
+                }
+            }
+        }
     }
+});
 
-}
-
-const schema = new UserSchema();
-
-eventHub.on(schema.BEFORE_SAVED, modifyDateData);
+eventHub.on(schema.BEFORE_SAVED, updateTimestampFields);
 
 const onUpdate = async ({errors, values, initialValues}) =>
 {
