@@ -217,7 +217,25 @@ export default class AdminApiApp {
 
         app.use(router);
 
+        // adding class methods to the express app
+
+        for (let propName of Object.getOwnPropertyNames(this.constructor.prototype))
+        {
+            if (propName === "constructor") continue;
+            app[propName] = this[propName].bind(this);
+        }
+
         return app;
+    }
+
+    async insertUser ({email, password, display_name, slug})
+    {
+        const user = await UserModel.findOne({email});
+
+        if (!user)
+        {
+            await new UserModel({email, password, display_name, slug}).save();
+        }
     }
 
 };

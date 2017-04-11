@@ -33,5 +33,8 @@ export const settings = {
     adminEmail: admin.email,
     adminPassword: admin.password,
     adminDisplayName: admin.display_name,
-    adminSlug: admin.slug
+    adminSlug: admin.slug,
+    sessionSecret: "sdnIdjSe2AE2SADfD",
+    adminApiRoot: "/admin-api",
+    publicApiRoot: "/public-api"
 };

@@ -1,21 +1,19 @@
 import {expect} from 'chai';
 import HttpClient from '../http-client';
-import {testCategory, admin} from './_data';
+import {testCategory, admin, settings} from './_config';
 
 export default () =>
 {
     describe('/categories', () =>
     {
-        const config = require("../../src/config");
-
         let client;
 
         beforeEach(() =>
         {
             client = new HttpClient({
-                port: config.getValue('webPort'),
-                hostname: config.getValue('webHost'),
-                pathbase: config.getValue('adminApiRoot')
+                port: settings.webPort,
+                hostname: settings.webHost,
+                pathbase: settings.adminApiRoot
             });
         });
 

@@ -281,6 +281,14 @@ export default class PublicApiApp {
         app.use(cookieParser());
         app.use(createRouter());
 
+        // adding class methods to the express app
+
+        for (let propName of Object.getOwnPropertyNames(this.constructor.prototype))
+        {
+            if (propName === "constructor") continue;
+            app[propName] = this[propName].bind(this);
+        }
+
         return app;
     }
 

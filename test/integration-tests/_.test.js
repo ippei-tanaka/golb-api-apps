@@ -1,5 +1,6 @@
-import {mongoDbBaseOperator} from 'simple-odm';
-import {weblogjs} from './_setup';
+import {mongoDbBaseOperator, mongoDriver} from 'simple-odm';
+import {settings} from './_config';
+import * as runner from './_runner';
 
 const suppressLog = (func) => () =>
 {
@@ -15,10 +16,14 @@ describe('Integration Tests', function ()
 {
     this.timeout(10000);
 
+    mongoDriver.setUp({
+        database: settings.dbName
+    });
+
     before('dropping database', suppressLog(mongoDbBaseOperator.dropDatabase));
     beforeEach('emptying collections', suppressLog(mongoDbBaseOperator.removeAllDocuments));
-    beforeEach('web server stopping', suppressLog(weblogjs.stop));
-    beforeEach('web server starting', suppressLog(weblogjs.start));
+    beforeEach('web server stopping', suppressLog(runner.stop));
+    beforeEach('web server starting', suppressLog(runner.start));
 
     describe('Admin API', () =>
     {
