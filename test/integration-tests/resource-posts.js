@@ -55,14 +55,14 @@ export default () =>
         it('should create a new post', async () =>
         {
             const options = await createOptionalData();
-            const {_id} = await adminClient.post(`/posts`, Object.assign({}, testPost, options));
+            const {_id} = await adminClient.post(`/posts`, {...testPost, ...options});
             await adminClient.get(`/posts/${_id}`);
         });
 
         it('should return a post', async () =>
         {
             const options = await createOptionalData();
-            const {_id} = await adminClient.post(`/posts`, Object.assign({}, testPost, options));
+            const {_id} = await adminClient.post(`/posts`, {...testPost, ...options});
             const post = await adminClient.get(`/posts/${_id}`);
 
             expect(post._id).to.equal(_id);
@@ -97,11 +97,11 @@ export default () =>
         it('should return a list of posts', async () =>
         {
             const options = await createOptionalData();
-            await adminClient.post(`/posts`, Object.assign({}, testPost, options, {slug: '1'}));
-            await adminClient.post(`/posts`, Object.assign({}, testPost, options, {slug: '2'}));
-            await adminClient.post(`/posts`, Object.assign({}, testPost, options, {slug: '3'}));
-            await adminClient.post(`/posts`, Object.assign({}, testPost, options, {slug: '4'}));
-            await adminClient.post(`/posts`, Object.assign({}, testPost, options, {slug: '5'}));
+            await adminClient.post(`/posts`, {...testPost, ...options, slug: '1'});
+            await adminClient.post(`/posts`, {...testPost, ...options, slug: '2'});
+            await adminClient.post(`/posts`, {...testPost, ...options, slug: '3'});
+            await adminClient.post(`/posts`, {...testPost, ...options, slug: '4'});
+            await adminClient.post(`/posts`, {...testPost, ...options, slug: '5'});
             const json = await adminClient.get(`/posts/`);
             const posts = json.items;
 
@@ -124,29 +124,33 @@ export default () =>
             const options1 = await createOptionalData("a");
             const options2 = await createOptionalData("b");
 
-            await adminClient.post(`/posts`, Object.assign({
+            await adminClient.post(`/posts`, {
                 title: "Intro to Javascript",
                 slug: "intro-to-js",
-                content: "Not Yet"
-            }, options1));
+                content: "Not Yet",
+                ...options1
+            });
 
-            await adminClient.post(`/posts`, Object.assign({
+            await adminClient.post(`/posts`, {
                 title: "Questions about Life",
                 slug: "questions",
-                content: "I don't know!"
-            }, options2));
+                content: "I don't know!",
+                ...options2
+            });
 
-            await adminClient.post(`/posts`, Object.assign({
+            await adminClient.post(`/posts`, {
                 title: "Favourite Food",
                 slug: "favourite-food",
-                content: "I like miso soup and beef stew."
-            }, options2));
+                content: "I like miso soup and beef stew.",
+                ...options2
+            });
 
-            await adminClient.post(`/posts`, Object.assign({
+            await adminClient.post(`/posts`, {
                 title: "Abstract Food",
                 slug: "abstract-food",
-                content: "Diet Food"
-            }, options2));
+                content: "Diet Food",
+                ...options2
+            });
 
             let json = await adminClient.get(`/posts/?query={"slug":"questions"}`);
             let posts = json.items;
@@ -162,5 +166,60 @@ export default () =>
             expect(posts[1].title).to.equal("Intro to Javascript");
         });
 
+        it('should return public posts properly', async () => {
+
+            const options = await createOptionalData();
+            const yesterday = new Date(new Date().getTime() - (24 * 60 * 60 * 1000));
+            const tomorrow = new Date(new Date().getTime() + (24 * 60 * 60 * 1000));
+
+            await adminClient.put(`/setting`, {posts_per_page: 10});
+
+            /* no  */ await adminClient.post(`/posts`, {title: "Post 1", slug:"post_1", content: "Test", ...options});
+            /* yes */ await adminClient.post(`/posts`, {title: "Post 2", slug:"post_2", content: "Test", published_date: yesterday, ...options});
+            /* no  */ await adminClient.post(`/posts`, {title: "Post 3", slug:"post_3", content: "Test", published_date: tomorrow, ...options});
+            /* yes */ await adminClient.post(`/posts`, {title: "Post 4", slug:"post_4", content: "Test", is_draft: false, published_date: yesterday, ...options});
+            /* no  */ await adminClient.post(`/posts`, {title: "Post 5", slug:"post_5", content: "Test", is_draft: true, published_date: yesterday, ...options});
+            /* yes */ await adminClient.post(`/posts`, {title: "Post 6", slug:"post_6", content: "Test", published_date: yesterday, ...options});
+
+            let obj = await publicClient.get(`/posts`);
+            expect(obj.posts.length).to.equal(3);
+            expect(obj.posts[0].title).to.equal("Post 2");
+            expect(obj.posts[1].title).to.equal("Post 4");
+            expect(obj.posts[2].title).to.equal("Post 6");
+
+            obj = await publicClient.get(`/posts/page/1`);
+            expect(obj.posts.length).to.equal(3);
+            expect(obj.posts[0].title).to.equal("Post 2");
+            expect(obj.posts[1].title).to.equal("Post 4");
+            expect(obj.posts[2].title).to.equal("Post 6");
+
+            obj = await publicClient.get(`/posts/page/2`);
+            expect(obj.posts.length).to.equal(0);
+
+            obj = await publicClient.get(`/posts`);
+            expect(obj.posts.length).to.equal(3);
+            expect(obj.posts[0].title).to.equal("Post 2");
+            expect(obj.posts[1].title).to.equal("Post 4");
+            expect(obj.posts[2].title).to.equal("Post 6");
+
+            obj = await publicClient.get(`/posts/page/1`);
+            expect(obj.posts.length).to.equal(3);
+            expect(obj.posts[0].title).to.equal("Post 2");
+            expect(obj.posts[1].title).to.equal("Post 4");
+            expect(obj.posts[2].title).to.equal("Post 6");
+
+            obj = await publicClient.get(`/posts/page/2`);
+            expect(obj.posts.length).to.equal(0);
+
+            await adminClient.put(`/setting`, {posts_per_page: 2});
+            obj = await publicClient.get(`/posts`);
+            expect(obj.posts.length).to.equal(2);
+            expect(obj.posts[0].title).to.equal("Post 2");
+            expect(obj.posts[1].title).to.equal("Post 4");
+
+            obj = await publicClient.get(`/posts/page/2`);
+            expect(obj.posts.length).to.equal(1);
+            expect(obj.posts[0].title).to.equal("Post 6");
+        });
     });
 };

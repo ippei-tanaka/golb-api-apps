@@ -32,10 +32,6 @@ export const start = async () =>
             if (error) throw error;
         }
     );
-
-    console.log("Unravel has started.");
-    console.log(`Public API: http://${settings.webHost}:${settings.webPort}${settings.publicApiRoot}`);
-    console.log(`Admin API: http://${settings.webHost}:${settings.webPort}${settings.adminApiRoot}`);
 };
 
 export const createAdmin = async () =>
@@ -49,9 +45,6 @@ export const createAdmin = async () =>
             display_name: settings.adminDisplayName,
             slug: settings.adminSlug
         });
-
-        console.log("Unravel has created an admin user.");
-
     }
     else
     {
@@ -64,7 +57,6 @@ export const stop = async () =>
 {
     if (server)
     {
-        console.log("Unravel has stopped.");
         await server.close();
     }
 };

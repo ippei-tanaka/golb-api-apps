@@ -47,7 +47,7 @@ const pageLinkBuilder = ({page, author, category, tag}) =>
     const tagQuery = tag ? `tag/${tag}` : "";
     const pageQuery = page > 1 ? `page/${page}` : "";
 
-    return urlResolver.resolve(authorQuery, categoryQuery, tagQuery, pageQuery);
+    return urlResolver.resolve("posts", authorQuery, categoryQuery, tagQuery, pageQuery);
 };
 
 const getUsedCategories = async () =>
@@ -84,7 +84,8 @@ const createRouter = () =>
 {
     const router = Router();
 
-    router.get(/^(\/category\/[^/]+)?(\/author\/[^/]+)?(\/tag\/[^/]+)?(\/|\/page\/[0-9]+\/?)?$/,
+    router.get(/^\/posts(\/category\/[^/]+)?(\/author\/[^/]+)?(\/tag\/[^/]+)?(\/|\/page\/[0-9]+\/?)?$/,
+
         async (request, response) =>
         {
             const categorySlug = parseParam(request.params[0], null);
@@ -152,46 +153,15 @@ const createRouter = () =>
             const authorName = author ? author.display_name + " - " : "";
             const prevPage = 1 <= page - 1 ? page - 1 : null;
             const nextPage = page + 1 <= totalPages ? page + 1 : null;
-            const categories = await getUsedCategories();
-            const authors = (await UserModel.findMany()).map(m => m.values);
-            /*
-            const menu = categories.length > 0 ?
-            <
-            CategoryList
-            categories = {categories} / >
-            :
-            null;
-            */
 
-            /*
-            response.type('html').status(OK).send(renderHtml(
-                < Layout
-            title = {`${authorName}${categoryName}${tagName}${setting.name}`
-        }
-            blogName = {setting.name
-        }
-            theme = {setting.theme
-        }
-            menu = {menu} >
-                < Posts
-            posts = {postModels.map(m => m.values)
-        }
-            categories = {categories}
-            authors = {authors}
-                / >
-                < Pagination
-            prevPageLink = {pageLinkBuilder({page: prevPage, category, author, tag})}
-            nextPageLink = {pageLinkBuilder({page: nextPage, category, author, tag})}
-                / >
-                < / Layout >
-            ))
-            ;
-
-            response.type('html').status(OK).send("test");
-            */
-
-            response.type('json').status(OK).send({});
-
+            response.type('json').status(OK).send({
+                title: `${authorName}${categoryName}${tagName}${setting.name}`,
+                categories: await getUsedCategories(),
+                authors: (await UserModel.findMany()).map(m => m.values),
+                posts: postModels.map(m => m.values),
+                prevPageLink: pageLinkBuilder({page: prevPage, category, author, tag}),
+                nextPageLink: pageLinkBuilder({page: nextPage, category, author, tag})
+            });
         });
 
     return router;

@@ -2,7 +2,6 @@
     "presets": [
         "es2015"
     ],
-
     "plugins": [
         [
             "babel-plugin-transform-builtin-extend",
@@ -15,6 +14,12 @@
         ],
         "add-module-exports",
         "transform-regenerator",
-        "transform-runtime"
+        "transform-runtime",
+        [
+            "transform-object-rest-spread",
+            {
+                "useBuiltIns": true
+            }
+        ]
     ]
 }
