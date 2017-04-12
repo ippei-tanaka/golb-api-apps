@@ -119,7 +119,6 @@ export default () =>
             }
         });
 
-        /*
         it('should return a filtered and sorted list of posts', async () =>
         {
             const options1 = await createOptionalData("a");
@@ -162,7 +161,6 @@ export default () =>
             expect(posts[0].title).to.equal("Favourite Food");
             expect(posts[1].title).to.equal("Intro to Javascript");
         });
-        */
 
     });
 };

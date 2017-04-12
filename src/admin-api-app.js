@@ -12,7 +12,7 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import expressSession from 'express-session';
 
-const addRoutesForCrudOperations = (Model, filter) =>
+const createRouterForCrudOperations = (Model, filter) =>
 {
     const router = new Router();
     const path = pluralize(Model.name);
@@ -58,8 +58,7 @@ const addRoutesForCrudOperations = (Model, filter) =>
     return router;
 };
 
-
-const addRoutesForAuth = (loginCheck, logoutCheck, authentication) =>
+const createRouterForAuth = (loginCheck, logoutCheck, authentication) =>
 {
     const router = new Router();
 
@@ -77,7 +76,7 @@ const addRoutesForAuth = (loginCheck, logoutCheck, authentication) =>
     return router;
 };
 
-const addRoutesForHome = () =>
+const createRouterForHome = () =>
 {
     const router = new Router();
 
@@ -89,7 +88,7 @@ const addRoutesForHome = () =>
     return router;
 };
 
-const addRoutesForUser = (filter) =>
+const createRouterForUser = (filter) =>
 {
     const router = new Router();
 
@@ -122,7 +121,7 @@ const addRoutesForUser = (filter) =>
     return router;
 };
 
-const addRoutesForSetting = (filter) =>
+const createRoutesForSetting = (filter) =>
 {
     const router = new Router();
 
@@ -214,13 +213,13 @@ export default class AdminApiApp {
 
         // The order of those functions matters.
 
-        app.use(addRoutesForHome());
-        app.use(addRoutesForAuth(isLoggedIn, isLoggedOut, PassportManager.localAuth));
-        app.use(addRoutesForUser(isLoggedIn));
-        app.use(addRoutesForCrudOperations(UserModel, isLoggedIn));
-        app.use(addRoutesForCrudOperations(CategoryModel, isLoggedIn));
-        app.use(addRoutesForCrudOperations(PostModel, isLoggedIn));
-        app.use(addRoutesForSetting(isLoggedIn));
+        app.use(createRouterForHome());
+        app.use(createRouterForAuth(isLoggedIn, isLoggedOut, PassportManager.localAuth));
+        app.use(createRouterForUser(isLoggedIn));
+        app.use(createRouterForCrudOperations(UserModel, isLoggedIn));
+        app.use(createRouterForCrudOperations(CategoryModel, isLoggedIn));
+        app.use(createRouterForCrudOperations(PostModel, isLoggedIn));
+        app.use(createRoutesForSetting(isLoggedIn));
 
         // adding class methods to the express app
 

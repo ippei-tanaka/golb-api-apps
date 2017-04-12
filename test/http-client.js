@@ -38,13 +38,16 @@ export default class HttpClient
         return this.request('delete', path);
     }
 
-    request (method, pathname = "", data = null)
+    request (method, pathString = "", data = null)
     {
+        const parsedPath = url.parse(pathString);
+
         const uri = url.format({
             protocol: this._protocol,
             port: this._port,
             hostname: this._hostname,
-            pathname: path.join(this._pathbase, pathname)
+            pathname: path.join(this._pathbase, parsedPath.pathname),
+            search: parsedPath.search
         });
 
         const options = {
