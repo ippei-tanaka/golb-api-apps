@@ -4,25 +4,32 @@ import {testUser, admin, settings} from './_config';
 
 export default () =>
 {
-    describe('/users', () =>
+    describe('User Resource', () =>
     {
-        let client;
+        let adminClient;
+        let publicClient;
 
         beforeEach(() =>
         {
-            client = new HttpClient({
+            adminClient = new HttpClient({
                 port: settings.webPort,
                 hostname: settings.webHost,
                 pathbase: settings.adminApiRoot
             });
+
+            publicClient = new HttpClient({
+                port: settings.webPort,
+                hostname: settings.webHost,
+                pathbase: settings.publicApiRoot
+            });
         });
 
-        beforeEach('login', () => client.post("/login", admin));
-        afterEach('logout', () => client.get("/logout"));
+        beforeEach('login', () => adminClient.post("/login", admin));
+        afterEach('logout', () => adminClient.get("/logout"));
 
         it('should return the login user data', async () =>
         {
-            const user = await client.get("/users/me");
+            const user = await adminClient.get("/users/me");
             expect(user.email).to.equal(admin.email);
             expect(user.slug).to.equal(admin.slug);
             expect(user.display_name).to.equal(admin.display_name);
@@ -31,8 +38,8 @@ export default () =>
 
         it('should create a new user', async () =>
         {
-            const {_id} = await client.post("/users", testUser);
-            const user = await client.get(`/users/${_id}`);
+            const {_id} = await adminClient.post("/users", testUser);
+            const user = await adminClient.get(`/users/${_id}`);
             expect(user._id).to.equal(_id);
         });
 
@@ -42,7 +49,7 @@ export default () =>
 
             try
             {
-                await client.post("/users", {});
+                await adminClient.post("/users", {});
             }
             catch (e)
             {
@@ -57,23 +64,23 @@ export default () =>
 
         it('should not include a password in the retrieved user data', async () =>
         {
-            const {_id} = await client.post("/users", testUser);
-            const user = await client.get(`/users/${_id}`);
+            const {_id} = await adminClient.post("/users", testUser);
+            const user = await adminClient.get(`/users/${_id}`);
             expect(user).to.not.have.property('password');
         });
 
         it("should update a user's display name", async () =>
         {
-            const {_id} = await client.post("/users", testUser);
+            const {_id} = await adminClient.post("/users", testUser);
 
-            let user = await client.get(`/users/${_id}`);
+            let user = await adminClient.get(`/users/${_id}`);
             expect(user.display_name).to.equal(testUser.display_name);
 
-            await client.put(`/users/${_id}`, {
+            await adminClient.put(`/users/${_id}`, {
                 display_name: "My new name"
             });
 
-            user = await client.get(`/users/${_id}`);
+            user = await adminClient.get(`/users/${_id}`);
             expect(user.display_name).to.equal("My new name");
         });
 
@@ -83,8 +90,8 @@ export default () =>
 
             try
             {
-                const {_id} = await client.post("/users", testUser);
-                await client.put(`/users/${_id}`, {
+                const {_id} = await adminClient.post("/users", testUser);
+                await adminClient.put(`/users/${_id}`, {
                     password: "NewPassword@@@",
                     password_confirmed: "NewPassword@@@",
                     old_password: testUser.password
@@ -104,8 +111,8 @@ export default () =>
 
             try
             {
-                const {_id} = await client.post("/users", testUser);
-                await client.put(`/users/${_id}/password`, {
+                const {_id} = await adminClient.post("/users", testUser);
+                await adminClient.put(`/users/${_id}/password`, {
                     password: "NewPassword@@@"
                 });
             }
@@ -124,8 +131,8 @@ export default () =>
 
             try
             {
-                const {_id} = await client.post("/users", testUser);
-                await client.put(`/users/${_id}/password`, {
+                const {_id} = await adminClient.post("/users", testUser);
+                await adminClient.put(`/users/${_id}/password`, {
                     password: "",
                     password_confirmed: "NewPassword@@@",
                     old_password: testUser.password
@@ -141,9 +148,9 @@ export default () =>
 
         it("should update a user's password if the confirmed password and their old password is sent", async () =>
         {
-            const {_id} = await client.post(`/users`, testUser);
+            const {_id} = await adminClient.post(`/users`, testUser);
 
-            await client.put(`/users/${_id}/password`, {
+            await adminClient.put(`/users/${_id}/password`, {
                 password: "NewPassword@@@",
                 password_confirmed: "NewPassword@@@",
                 old_password: testUser.password
@@ -152,13 +159,13 @@ export default () =>
 
         it("should return proper error messages when the new password got a validation error", async () =>
         {
-            const {_id} = await client.post("/users", testUser);
+            const {_id} = await adminClient.post("/users", testUser);
 
             let error;
 
             try
             {
-                await client.put(`/users/${_id}/password`, {
+                await adminClient.put(`/users/${_id}/password`, {
                     password: "p ss wo r d",
                     password_confirmed: "",
                     old_password: "Wrong Pass"
@@ -181,9 +188,9 @@ export default () =>
 
             try
             {
-                const {_id} = await client.post("/users", testUser);
+                const {_id} = await adminClient.post("/users", testUser);
 
-                await client.put(`/users/${_id}/password`, {
+                await adminClient.put(`/users/${_id}/password`, {
                     password: "NewPassword@@@",
                     password_confirmed: "NewPassword@@@",
                     old_password: "WrongPassword"
@@ -203,9 +210,9 @@ export default () =>
 
             try
             {
-                const {_id} = await client.post("/users", testUser);
+                const {_id} = await adminClient.post("/users", testUser);
 
-                await client.put(`/users/${_id}/password`, {
+                await adminClient.put(`/users/${_id}/password`, {
                     password: "NewPassword@@@",
                     password_confirmed: "qwerqwer",
                     old_password: testUser.password

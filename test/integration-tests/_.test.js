@@ -21,17 +21,16 @@ describe('Integration Tests', function ()
     });
 
     before('dropping database', suppressLog(mongoDbBaseOperator.dropDatabase));
+    before('web server stopping', suppressLog(runner.stop));
+    before('web server starting', suppressLog(runner.start));
     beforeEach('emptying collections', suppressLog(mongoDbBaseOperator.removeAllDocuments));
-    beforeEach('web server stopping', suppressLog(runner.stop));
-    beforeEach('web server starting', suppressLog(runner.start));
+    beforeEach('creating an admin', suppressLog(runner.createAdmin));
+    after('web server stopping', suppressLog(runner.stop));
 
-    describe('Admin API', () =>
-    {
-        require('./admin-home')();
-        require('./admin-login')();
-        require('./admin-users')();
-        require('./admin-categories')();
-        require('./admin-posts')();
-        require('./admin-setting')();
-    });
+    require('./resource-home')();
+    require('./resource-authentication')();
+    require('./resource-users')();
+    require('./resource-categories')();
+    require('./resource-posts')();
+    require('./resource-setting')();
 });

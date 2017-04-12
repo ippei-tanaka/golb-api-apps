@@ -3,22 +3,28 @@ import {settings} from './_config';
 import {AdminApiApp, PublicApiApp} from '../../src/app';
 
 let server;
+let app;
+let adminApiApp;
+let publicSiteApp;
 
 export const start = async () =>
 {
-    const app = express();
-    const adminApiApp = new AdminApiApp(settings);
-    const publicSiteApp = new PublicApiApp(settings);
+    if (!app)
+    {
+        app = express();
+    }
 
-    app.use(settings.adminApiRoot, adminApiApp);
-    app.use(settings.publicApiRoot, publicSiteApp);
+    if (!adminApiApp)
+    {
+        adminApiApp = new AdminApiApp(settings);
+        app.use(settings.adminApiRoot, adminApiApp);
+    }
 
-    await adminApiApp.insertUser({
-        email: settings.adminEmail,
-        password: settings.adminPassword,
-        display_name: settings.adminDisplayName,
-        slug: settings.adminSlug
-    });
+    if (!publicSiteApp)
+    {
+        publicSiteApp = new PublicApiApp(settings);
+        app.use(settings.publicApiRoot, publicSiteApp);
+    }
 
     server = await app.listen(settings.webPort, settings.webHost,
         error =>
@@ -27,16 +33,38 @@ export const start = async () =>
         }
     );
 
-    console.log("WeblogJS has started.");
+    console.log("Unravel has started.");
     console.log(`Public API: http://${settings.webHost}:${settings.webPort}${settings.publicApiRoot}`);
     console.log(`Admin API: http://${settings.webHost}:${settings.webPort}${settings.adminApiRoot}`);
+};
+
+export const createAdmin = async () =>
+{
+
+    if (adminApiApp)
+    {
+        await adminApiApp.insertUser({
+            email: settings.adminEmail,
+            password: settings.adminPassword,
+            display_name: settings.adminDisplayName,
+            slug: settings.adminSlug
+        });
+
+        console.log("Unravel has created an admin user.");
+
+    }
+    else
+    {
+        console.log("Unravel has failed to create an admin user.");
+    }
+
 };
 
 export const stop = async () =>
 {
     if (server)
     {
-        console.log("WeblogJS has stopped.");
+        console.log("Unravel has stopped.");
         await server.close();
     }
 };
