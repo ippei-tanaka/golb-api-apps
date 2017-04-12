@@ -12,31 +12,32 @@ import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import expressSession from 'express-session';
 
-const addRoutesForCrudOperations = (Model, app, filter) =>
+const addRoutesForCrudOperations = (Model, filter) =>
 {
+    const router = new Router();
     const path = pluralize(Model.name);
 
-    app.get(`/${path}`, filter, (request, response) => (async () =>
+    router.get(`/${path}`, filter, (request, response) => (async () =>
     {
         const {query, sort, limit, skip} = parseParameters(request.url);
         const models = await Model.findMany({query, sort, limit, skip});
         successHandler(response, {items: models});
     })().catch(errorHandler(response)));
 
-    app.get(`/${path}/:id`, filter, (request, response) => (async () =>
+    router.get(`/${path}/:id`, filter, (request, response) => (async () =>
     {
         const model = await Model.findOne({_id: new ObjectID(request.params.id)});
         successHandler(response, model);
     })().catch(errorHandler(response)));
 
-    app.post(`/${path}`, filter, (request, response) => (async () =>
+    router.post(`/${path}`, filter, (request, response) => (async () =>
     {
         const model = new Model(request.body);
         await model.save();
         successHandler(response, {_id: model.id});
     })().catch(errorHandler(response)));
 
-    app.put(`/${path}/:id`, filter, (request, response) => (async () =>
+    router.put(`/${path}/:id`, filter, (request, response) => (async () =>
     {
         const model = await Model.findOne({_id: new ObjectID(request.params.id)});
 
@@ -48,45 +49,51 @@ const addRoutesForCrudOperations = (Model, app, filter) =>
         successHandler(response, {});
     })().catch(errorHandler(response)));
 
-    app.delete(`/${path}/:id`, filter, (request, response) => (async () =>
+    router.delete(`/${path}/:id`, filter, (request, response) => (async () =>
     {
         await Model.deleteOne({_id: new ObjectID(request.params.id)});
         successHandler(response, {});
     })().catch(errorHandler(response)));
 
-    return app;
+    return router;
 };
 
 
-const addRoutesForAuth = (app, loginCheck, logoutCheck, authentication) =>
+const addRoutesForAuth = (loginCheck, logoutCheck, authentication) =>
 {
-    app.post('/login', logoutCheck, authentication, (request, response) =>
+    const router = new Router();
+
+    router.post('/login', logoutCheck, authentication, (request, response) =>
     {
         successHandler(response, {});
     });
 
-    app.get('/logout', loginCheck, (request, response) =>
+    router.get('/logout', loginCheck, (request, response) =>
     {
         request.logout();
         successHandler(response, {});
     });
 
-    return app;
+    return router;
 };
 
-const addRoutesForHome = (app) =>
+const addRoutesForHome = () =>
 {
-    app.get(`/`, (request, response) => (async () =>
+    const router = new Router();
+
+    router.get(`/`, (request, response) => (async () =>
     {
         successHandler(response, {});
     })().catch(errorHandler(response)));
 
-    return app;
+    return router;
 };
 
-const addRoutesForUser = (app, filter) =>
+const addRoutesForUser = (filter) =>
 {
-    app.get(`/users/me`, filter, (request, response) => (async () =>
+    const router = new Router();
+
+    router.get(`/users/me`, filter, (request, response) => (async () =>
     {
         if (request.user)
         {
@@ -99,7 +106,7 @@ const addRoutesForUser = (app, filter) =>
         }
     })().catch(errorHandler(response)));
 
-    app.put(`/users/:id/password`, filter, (request, response) => (async () =>
+    router.put(`/users/:id/password`, filter, (request, response) => (async () =>
     {
         const model = await UserModel.findOne({_id: new ObjectID(request.params.id)});
 
@@ -112,24 +119,26 @@ const addRoutesForUser = (app, filter) =>
         successHandler(response, {});
     })().catch(errorHandler(response)));
 
-    return app;
+    return router;
 };
 
-const addRoutesForSetting = (app, filter) =>
+const addRoutesForSetting = (filter) =>
 {
-    app.get(`/setting`, filter, (request, response) => (async () =>
+    const router = new Router();
+
+    router.get(`/setting`, filter, (request, response) => (async () =>
     {
         const model = await SettingModel.getSetting();
         successHandler(response, model);
     })().catch(errorHandler(response)));
 
-    app.put(`/setting`, filter, (request, response) => (async () =>
+    router.put(`/setting`, filter, (request, response) => (async () =>
     {
         await SettingModel.setSetting(request.body);
         successHandler(response, {});
     })().catch(errorHandler(response)));
 
-    return app;
+    return router;
 };
 
 
@@ -203,19 +212,15 @@ export default class AdminApiApp {
         app.use(PassportManager.passport.initialize());
         app.use(PassportManager.passport.session());
 
-        let router = new Router();
-
         // The order of those functions matters.
-        router = addRoutesForHome(router);
-        router = addRoutesForAuth(router, isLoggedIn, isLoggedOut, PassportManager.localAuth);
-        router = addRoutesForUser(router, isLoggedIn);
-        router = addRoutesForCrudOperations(UserModel, router, isLoggedIn);
-        router = addRoutesForCrudOperations(CategoryModel, router, isLoggedIn);
-        router = addRoutesForCrudOperations(PostModel, router, isLoggedIn);
-        router = addRoutesForSetting(router, isLoggedIn);
-        //router = addRoutesForThemes(router, isLoggedIn);
 
-        app.use(router);
+        app.use(addRoutesForHome());
+        app.use(addRoutesForAuth(isLoggedIn, isLoggedOut, PassportManager.localAuth));
+        app.use(addRoutesForUser(isLoggedIn));
+        app.use(addRoutesForCrudOperations(UserModel, isLoggedIn));
+        app.use(addRoutesForCrudOperations(CategoryModel, isLoggedIn));
+        app.use(addRoutesForCrudOperations(PostModel, isLoggedIn));
+        app.use(addRoutesForSetting(isLoggedIn));
 
         // adding class methods to the express app
 

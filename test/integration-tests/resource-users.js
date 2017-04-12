@@ -7,7 +7,6 @@ export default () =>
     describe('User Resource', () =>
     {
         let adminClient;
-        let publicClient;
 
         beforeEach(() =>
         {
@@ -15,12 +14,6 @@ export default () =>
                 port: settings.webPort,
                 hostname: settings.webHost,
                 pathbase: settings.adminApiRoot
-            });
-
-            publicClient = new HttpClient({
-                port: settings.webPort,
-                hostname: settings.webHost,
-                pathbase: settings.publicApiRoot
             });
         });
 

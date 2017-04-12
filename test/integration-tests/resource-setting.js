@@ -4,7 +4,7 @@ import {admin, settings} from './_config';
 
 export default () =>
 {
-    describe('/setting', () =>
+    describe('Setting Resource', () =>
     {
         let client;
 

@@ -4,40 +4,47 @@ import {testPost, admin, settings} from './_config';
 
 export default () =>
 {
-    describe('/posts', () =>
+    describe('Post Resource', () =>
     {
-        let client;
+        let adminClient;
+        let publicClient;
 
         beforeEach(() =>
         {
-            client = new HttpClient({
+            adminClient = new HttpClient({
                 port: settings.webPort,
                 hostname: settings.webHost,
                 pathbase: settings.adminApiRoot
             });
+
+            publicClient = new HttpClient({
+                port: settings.webPort,
+                hostname: settings.webHost,
+                pathbase: settings.publicApiRoot
+            });
         });
 
-        beforeEach('login', () => client.post("/login", admin));
-        afterEach('logout', () => client.get("/logout"));
+        beforeEach('login', () => adminClient.post("/login", admin));
+        afterEach('logout', () => adminClient.get("/logout"));
 
         const createOptionalData = async (prefix = "") =>
         {
 
-            let result = await client.post(`/users`, {
+            let result = await adminClient.post(`/users`, {
                 email: `${prefix}test@test.com`,
                 password: "testtest",
                 slug: `${prefix}test-test`,
                 display_name: `${prefix}Test User`
             });
 
-            const user = await client.get(`/users/${result._id}`);
+            const user = await adminClient.get(`/users/${result._id}`);
 
-            result = await client.post(`/categories`, {
+            result = await adminClient.post(`/categories`, {
                 name: `${prefix}Test Category`,
                 slug: `${prefix}test-category`
             });
 
-            const category = await client.get(`/categories/${result._id}`);
+            const category = await adminClient.get(`/categories/${result._id}`);
 
             return {
                 author_id: user._id,
@@ -48,15 +55,15 @@ export default () =>
         it('should create a new post', async () =>
         {
             const options = await createOptionalData();
-            const {_id} = await client.post(`/posts`, Object.assign({}, testPost, options));
-            await client.get(`/posts/${_id}`);
+            const {_id} = await adminClient.post(`/posts`, Object.assign({}, testPost, options));
+            await adminClient.get(`/posts/${_id}`);
         });
 
         it('should return a post', async () =>
         {
             const options = await createOptionalData();
-            const {_id} = await client.post(`/posts`, Object.assign({}, testPost, options));
-            const post = await client.get(`/posts/${_id}`);
+            const {_id} = await adminClient.post(`/posts`, Object.assign({}, testPost, options));
+            const post = await adminClient.get(`/posts/${_id}`);
 
             expect(post._id).to.equal(_id);
             expect(post.title).to.equal(testPost.title);
@@ -72,7 +79,7 @@ export default () =>
 
             try
             {
-                await client.post(`/posts`, {
+                await adminClient.post(`/posts`, {
                     title: "Hello World",
                     slug: "hello-world",
                     content: "test",
@@ -90,12 +97,12 @@ export default () =>
         it('should return a list of posts', async () =>
         {
             const options = await createOptionalData();
-            await client.post(`/posts`, Object.assign({}, testPost, options, {slug: '1'}));
-            await client.post(`/posts`, Object.assign({}, testPost, options, {slug: '2'}));
-            await client.post(`/posts`, Object.assign({}, testPost, options, {slug: '3'}));
-            await client.post(`/posts`, Object.assign({}, testPost, options, {slug: '4'}));
-            await client.post(`/posts`, Object.assign({}, testPost, options, {slug: '5'}));
-            const json = await client.get(`/posts/`);
+            await adminClient.post(`/posts`, Object.assign({}, testPost, options, {slug: '1'}));
+            await adminClient.post(`/posts`, Object.assign({}, testPost, options, {slug: '2'}));
+            await adminClient.post(`/posts`, Object.assign({}, testPost, options, {slug: '3'}));
+            await adminClient.post(`/posts`, Object.assign({}, testPost, options, {slug: '4'}));
+            await adminClient.post(`/posts`, Object.assign({}, testPost, options, {slug: '5'}));
+            const json = await adminClient.get(`/posts/`);
             const posts = json.items;
 
             expect(posts.length).to.equal(5);
@@ -115,40 +122,40 @@ export default () =>
         /*
         it('should return a filtered and sorted list of posts', async () =>
         {
-            const options1 = await createOptionalData(1);
-            const options2 = await createOptionalData(2);
+            const options1 = await createOptionalData("a");
+            const options2 = await createOptionalData("b");
 
-            await client.post(`/posts`, Object.assign({
+            await adminClient.post(`/posts`, Object.assign({
                 title: "Intro to Javascript",
                 slug: "intro-to-js",
                 content: "Not Yet"
             }, options1));
 
-            await client.post(`/posts`, Object.assign({
+            await adminClient.post(`/posts`, Object.assign({
                 title: "Questions about Life",
                 slug: "questions",
                 content: "I don't know!"
             }, options2));
 
-            await client.post(`/posts`, Object.assign({
+            await adminClient.post(`/posts`, Object.assign({
                 title: "Favourite Food",
                 slug: "favourite-food",
                 content: "I like miso soup and beef stew."
             }, options2));
 
-            await client.post(`/posts`, Object.assign({
+            await adminClient.post(`/posts`, Object.assign({
                 title: "Abstract Food",
                 slug: "abstract-food",
                 content: "Diet Food"
             }, options2));
 
-            let json = await client.get(`/posts/?query={"slug":"questions"}`);
+            let json = await adminClient.get(`/posts/?query={"slug":"questions"}`);
             let posts = json.items;
 
             expect(posts.length).to.equal(1);
             expect(posts[0].title).to.equal("Questions about Life");
 
-            json = await client.get(`/posts/?skip=1&limit=2&sort={"slug":1}`);
+            json = await adminClient.get(`/posts/?skip=1&limit=2&sort={"slug":1}`);
             posts = json.items;
 
             expect(posts.length).to.equal(2);

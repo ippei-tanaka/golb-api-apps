@@ -4,26 +4,26 @@ import {testCategory, admin, settings} from './_config';
 
 export default () =>
 {
-    describe('/categories', () =>
+    describe('Category Resource', () =>
     {
-        let client;
+        let adminClient;
 
         beforeEach(() =>
         {
-            client = new HttpClient({
+            adminClient = new HttpClient({
                 port: settings.webPort,
                 hostname: settings.webHost,
                 pathbase: settings.adminApiRoot
             });
         });
 
-        beforeEach('login', () => client.post("/login", admin));
-        afterEach('logout', () => client.get("/logout"));
+        beforeEach('login', () => adminClient.post("/login", admin));
+        afterEach('logout', () => adminClient.get("/logout"));
 
         it('should create a new category', async () =>
         {
-                const {_id} = await client.post(`/categories`, testCategory);
-                const category = await client.get(`/categories/${_id}`);
+                const {_id} = await adminClient.post(`/categories`, testCategory);
+                const category = await adminClient.get(`/categories/${_id}`);
                 expect(category._id).to.be.string;
                 expect(category.name).to.equal(testCategory.name);
                 expect(category.slug).to.equal(testCategory.slug);
@@ -36,8 +36,8 @@ export default () =>
 
             try
             {
-                await client.post(`/categories`, cat1);
-                await client.post(`/categories`, cat2);
+                await adminClient.post(`/categories`, cat1);
+                await adminClient.post(`/categories`, cat2);
             } catch (e) {
                 return;
             }
@@ -51,7 +51,7 @@ export default () =>
 
             try
             {
-                await client.post(`/categories`, {
+                await adminClient.post(`/categories`, {
                     name: '',
                     slug: ''
                 });
@@ -70,7 +70,7 @@ export default () =>
 
             try
             {
-                await client.post(`/categories`, {
+                await adminClient.post(`/categories`, {
                     name: '123456789',
                     slug: 'd d'
                 });
@@ -85,12 +85,12 @@ export default () =>
 
         it('should partially update a category', async () =>
         {
-            const {_id} = await client.post(`/categories`, testCategory);
-            const data1 = await client.get(`/categories/${_id}`);
-            await client.put(`/categories/${_id}`, {
+            const {_id} = await adminClient.post(`/categories`, testCategory);
+            const data1 = await adminClient.get(`/categories/${_id}`);
+            await adminClient.put(`/categories/${_id}`, {
                 name: "Hello World"
             });
-            const data2 = await client.get(`/categories/${_id}`);
+            const data2 = await adminClient.get(`/categories/${_id}`);
 
             expect(data1.name).to.equal(testCategory.name);
             expect(data1.slug).to.equal(testCategory.slug);
@@ -107,9 +107,9 @@ export default () =>
             {
                 const cat1 = {name: "Foo", slug: "foo"};
                 const cat2 = {name: "Bar", slug: "bar"};
-                await client.post(`/categories`, cat1);
-                const id2 = (await client.post(`/categories`, cat2))._id;
-                await client.put(`/categories/${id2}`, {slug: "foo"});
+                await adminClient.post(`/categories`, cat1);
+                const id2 = (await adminClient.post(`/categories`, cat2))._id;
+                await adminClient.put(`/categories/${id2}`, {slug: "foo"});
             }
             catch (e)
             {
@@ -132,7 +132,7 @@ export default () =>
             try
             {
                 const cat = {name: name, slug: "fo o"};
-                await client.post(`/categories`, cat);
+                await adminClient.post(`/categories`, cat);
             }
             catch (e)
             {
@@ -147,11 +147,11 @@ export default () =>
             const cat1 = {name: "Foo", slug: "foo"};
             const cat2 = {name: "Bar", slug: "bar"};
 
-            await client.post(`/categories`, cat1);
-            await client.post(`/categories`, cat2);
-            const data1 = await client.get(`/categories`);
-            await client.del(`/categories/${data1.items[0]._id}`);
-            const data2 = await client.get(`/categories`);
+            await adminClient.post(`/categories`, cat1);
+            await adminClient.post(`/categories`, cat2);
+            const data1 = await adminClient.get(`/categories`);
+            await adminClient.del(`/categories/${data1.items[0]._id}`);
+            const data2 = await adminClient.get(`/categories`);
 
             expect(data1.items).to.have.length(2);
             expect(data2.items).to.have.length(1);
@@ -163,17 +163,17 @@ export default () =>
             const cat2 = {name: "Bar", slug: "bar"};
             const cat3 = {name: "Foo Bar", slug: "foobar"};
 
-            await client.post(`/categories`, cat1);
-            await client.post(`/categories`, cat2);
-            await client.post(`/categories`, cat3);
-            const data = await client.get(`/categories`);
+            await adminClient.post(`/categories`, cat1);
+            await adminClient.post(`/categories`, cat2);
+            await adminClient.post(`/categories`, cat3);
+            const data = await adminClient.get(`/categories`);
             expect(data.items).to.have.length(3);
         });
 
         it('should return a category', async () =>
         {
-            const createdCategory = await client.post(`/categories`, testCategory);
-            const retreivedCategory = await client.get(`/categories/${createdCategory._id}`);
+            const createdCategory = await adminClient.post(`/categories`, testCategory);
+            const retreivedCategory = await adminClient.get(`/categories/${createdCategory._id}`);
             expect(retreivedCategory._id).to.equal(createdCategory._id);
             expect(retreivedCategory.name).to.equal(testCategory.name);
             expect(retreivedCategory.slug).to.equal(testCategory.slug);
