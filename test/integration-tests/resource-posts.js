@@ -385,5 +385,45 @@ export default () =>
             expect(obj.posts[2].title).to.equal("Post 4");
         });
 
+        it('should return an identified post', async () =>
+        {
+            const options = await createOptionalData();
+            const tomorrow = new Date(new Date().getTime() + (24 * 60 * 60 * 1000));
+            const yesterday = new Date(new Date().getTime() - (24 * 60 * 60 * 1000));
+
+            await adminClient.post("/posts", {title: "Post 1", slug:"post_1", content: "Test", published_date: yesterday, ...options});
+            await adminClient.post("/posts", {title: "Post 2", slug:"post_2", content: "Test", published_date: yesterday, is_draft: true, ...options});
+            await adminClient.post("/posts", {title: "Post 3", slug:"post_3", content: "Test", published_date: tomorrow, ...options});
+
+            const _post1 = await publicClient.get("/post/post_1");
+            expect(_post1.title).to.equal("Post 1");
+
+            let error1 = null;
+
+            try {
+                await publicClient.get("/post/post_2");
+            }
+            catch (e)
+            {
+                error1 = e;
+            }
+
+            expect(error1).to.not.equal(null);
+
+            let error2 = null;
+
+            try {
+                await publicClient.get("/post/post_3");
+            }
+            catch (e)
+            {
+                error2 = e;
+            }
+
+            expect(error2).to.not.equal(null);
+
+        });
+
+
     });
 };

@@ -1,6 +1,5 @@
 import express, {Router} from "express";
-//import Models from './models';
-import {OK, NOT_FOUND, ERROR} from './status-codes';
+import {OK, NOT_FOUND} from './status-codes';
 import UserModel from './models/user-model';
 import CategoryModel from './models/category-model';
 import PostModel from './models/post-model';
@@ -15,25 +14,6 @@ const parseParam = (str, defaultValue) =>
     const arr = str ? str.split('/') : [];
     return arr.length >= 3 && arr[2] ? arr[2] : defaultValue;
 };
-
-//const renderHtml = (element) =>
-//    ("<!DOCTYPE html>" + ReactDOMServer.renderToStaticMarkup(element));
-
-//const isProduction = process.env.NODE_ENV === "production";
-
-/*
-const errorHandler = (response) => co.wrap(function* (e)
-{
-
-    const setting = (yield SettingModel.getSetting()).values;
-
-    response.type('html').status(ERROR).send(renderHtml(
-        <Layout title="Error" blogName={setting.name} theme={setting.theme}>
-            <Message message={isProduction ? "Error Occurred." : e.message}/>
-        </Layout>
-    ));
-});
-*/
 
 const pageLinkBuilder = ({page, author, category, tag}) =>
 {
@@ -80,7 +60,7 @@ const getUsedCategories = async () =>
     });
 };
 
-const createRouter = () =>
+const createMultiplePostsRouter = () =>
 {
     const router = Router();
 
@@ -148,16 +128,10 @@ const createRouter = () =>
                 totalPages = Math.ceil(sum.size / setting.posts_per_page);
             }
 
-            const categoryName = category ? category.name + " - " : "";
-            const tagName = tag ? tag + " - " : "";
-            const authorName = author ? author.display_name + " - " : "";
             const prevPage = 1 <= page - 1 ? page - 1 : null;
             const nextPage = page + 1 <= totalPages ? page + 1 : null;
 
             response.type('json').status(OK).send({
-                title: `${authorName}${categoryName}${tagName}${setting.name}`,
-                categories: await getUsedCategories(),
-                authors: (await UserModel.findMany()).map(m => m.values),
                 posts: postModels.map(m => m.values),
                 prevPageLink: pageLinkBuilder({page: prevPage, category, author, tag}),
                 nextPageLink: pageLinkBuilder({page: nextPage, category, author, tag})
@@ -168,75 +142,58 @@ const createRouter = () =>
 
 };
 
-
-/*
-router.get(/^\/post\/([^/]+)\/?$/, (request, response, next) => co(function* ()
+const createSinglePostRouter = () =>
 {
-    const postSlug = request.params[0];
+    const router = Router();
 
-    const PostModel = Models.getModel('post');
+    router.get(/^\/post\/([^/]+)\/?$/, async (request, response, next) =>
+    {
+        const postSlug = request.params[0];
 
-    const post = await PostModel.findOne({
-        slug: postSlug,
-        published_date: {$lt: new Date()},
-        is_draft: {$ne: true}
+        const post = await PostModel.findOne({
+            slug: postSlug,
+            published_date: {$lt: new Date()},
+            is_draft: {$ne: true}
+        });
+
+        if (!post)
+        {
+            return next();
+        }
+
+        response.type('json').status(OK).send(post);
     });
 
-    if (!post)
-    {
-        return next();
-    }
+    return router;
+};
 
-    const setting = (await SettingModel.getSetting()).values;
-    const values = post.values;
-    const categories = await getUsedCategories();
-    const authors = (await UserModel.findMany()).map(m => m.values);
-    const menu = categories.length > 0 ?
-    <
-    CategoryList
-    categories = {categories} / >
-    :
-    null;
-
-    response.type('html').status(OK).send(renderHtml(
-        < Layout
-    title = {`${values.title} - ${setting.name}`
-}
-    blogName = {setting.name
-}
-    theme = {setting.theme
-}
-    menu = {menu}
-        >
-        < Posts
-    posts = {[values]}
-    categories = {categories}
-    authors = {authors} / >
-        < / Layout >
-    ))
-    ;
-
-}).catch(errorHandler(response)));
-
-router.get("*", (request, response) => co(function* ()
+const createUsedCategoriesRouter = () =>
 {
-    const setting = (await SettingModel.getSetting()).values;
+    const router = Router();
 
-    response.type('html').status(NOT_FOUND).send(renderHtml(
-        < Layout
-    title = "Not Found"
-    blogName = {setting.name
-}
-    theme = {setting.theme
-}>
-    <
-    Message
-    message = "The page you are looking for is not found." / >
-        < / Layout >
-    ))
-    ;
-}).catch(errorHandler(response)));
-*/
+    router.get(/^\/categories\/?$/,
+
+        async (request, response) =>
+        {
+            response.type('json').status(OK).send({
+                categories: await getUsedCategories()
+            });
+        });
+
+    return router;
+};
+
+const createNotFoundRouter = () =>
+{
+    const router = Router();
+
+    router.get("*", async (request, response) =>
+    {
+        response.type('json').status(NOT_FOUND).send({});
+    });
+
+    return router;
+};
 
 export default class PublicApiApp {
 
@@ -249,7 +206,10 @@ export default class PublicApiApp {
         app.use(bodyParser.json());
         app.use(bodyParser.urlencoded({extended: false}));
         app.use(cookieParser());
-        app.use(createRouter());
+        app.use(createMultiplePostsRouter());
+        app.use(createUsedCategoriesRouter());
+        app.use(createSinglePostRouter());
+        app.use(createNotFoundRouter());
 
         // adding class methods to the express app
 

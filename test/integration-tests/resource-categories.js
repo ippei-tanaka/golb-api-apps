@@ -7,6 +7,7 @@ export default () =>
     describe('Category Resource', () =>
     {
         let adminClient;
+        let publicClient;
 
         beforeEach(() =>
         {
@@ -15,10 +16,43 @@ export default () =>
                 hostname: settings.webHost,
                 pathbase: settings.adminApiRoot
             });
+
+            publicClient = new HttpClient({
+                port: settings.webPort,
+                hostname: settings.webHost,
+                pathbase: settings.publicApiRoot
+            });
         });
 
         beforeEach('login', () => adminClient.post("/login", admin));
         afterEach('logout', () => adminClient.get("/logout"));
+
+        const createOptionalData = async (prefix = "") =>
+        {
+
+            let result = await adminClient.post(`/users`, {
+                email: `${prefix}test@test.com`,
+                password: "testtest",
+                slug: `${prefix}test-test`,
+                display_name: `${prefix}Test User`
+            });
+
+            const user = await adminClient.get(`/users/${result._id}`);
+
+            result = await adminClient.post(`/categories`, {
+                name: `${prefix}Test Category`,
+                slug: `${prefix}test-category`
+            });
+
+            const category = await adminClient.get(`/categories/${result._id}`);
+
+            return {
+                author_id: user._id,
+                category_id: category._id,
+                author_slug: user.slug,
+                category_slug: category.slug
+            };
+        };
 
         it('should create a new category', async () =>
         {
@@ -177,6 +211,33 @@ export default () =>
             expect(retreivedCategory._id).to.equal(createdCategory._id);
             expect(retreivedCategory.name).to.equal(testCategory.name);
             expect(retreivedCategory.slug).to.equal(testCategory.slug);
+        });
+
+        it('should return all the categories used on the blog posts and the numbers of posts', async () =>
+        {
+            const options1 = await createOptionalData("a");
+            const options2 = await createOptionalData("b");
+            const options3 = await createOptionalData("c");
+            const options4 = await createOptionalData("d");
+            await adminClient.put("/setting", {posts_per_page: 10});
+            const yesterday = new Date(new Date().getTime() - (24 * 60 * 60 * 1000));
+
+            await adminClient.post("/posts", {title: "Post 1", slug:"post_1", content: "Test", published_date: yesterday, ...options1});
+            await adminClient.post("/posts", {title: "Post 2", slug:"post_2", content: "Test", published_date: yesterday, ...options1});
+            await adminClient.post("/posts", {title: "Post 3", slug:"post_3", content: "Test", published_date: yesterday, ...options2});
+            await adminClient.post("/posts", {title: "Post 4", slug:"post_4", content: "Test", ...options3});
+            await adminClient.post("/posts", {title: "Post 5", slug:"post_5", content: "Test", published_date: yesterday, ...options4});
+
+            let obj;
+
+            obj = await publicClient.get("/categories");
+            expect(obj.categories.length).to.equal(3);
+            expect(obj.categories[0]._id).to.equal(options1.category_id);
+            expect(obj.categories[0].size).to.equal(2);
+            expect(obj.categories[1]._id).to.equal(options2.category_id);
+            expect(obj.categories[1].size).to.equal(1);
+            expect(obj.categories[2]._id).to.equal(options4.category_id);
+            expect(obj.categories[2].size).to.equal(1);
         });
     });
 };
