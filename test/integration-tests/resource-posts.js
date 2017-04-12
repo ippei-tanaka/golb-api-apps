@@ -48,7 +48,9 @@ export default () =>
 
             return {
                 author_id: user._id,
-                category_id: category._id
+                category_id: category._id,
+                author_slug: user.slug,
+                category_slug: category.slug
             };
         };
 
@@ -166,7 +168,7 @@ export default () =>
             expect(posts[1].title).to.equal("Intro to Javascript");
         });
 
-        it('should return public posts properly', async () => {
+        it('should return non-draft public posts based on posts per page setting', async () => {
 
             const options = await createOptionalData();
             const yesterday = new Date(new Date().getTime() - (24 * 60 * 60 * 1000));
@@ -174,12 +176,12 @@ export default () =>
 
             await adminClient.put(`/setting`, {posts_per_page: 10});
 
-            /* no  */ await adminClient.post(`/posts`, {title: "Post 1", slug:"post_1", content: "Test", ...options});
-            /* yes */ await adminClient.post(`/posts`, {title: "Post 2", slug:"post_2", content: "Test", published_date: yesterday, ...options});
-            /* no  */ await adminClient.post(`/posts`, {title: "Post 3", slug:"post_3", content: "Test", published_date: tomorrow, ...options});
-            /* yes */ await adminClient.post(`/posts`, {title: "Post 4", slug:"post_4", content: "Test", is_draft: false, published_date: yesterday, ...options});
-            /* no  */ await adminClient.post(`/posts`, {title: "Post 5", slug:"post_5", content: "Test", is_draft: true, published_date: yesterday, ...options});
-            /* yes */ await adminClient.post(`/posts`, {title: "Post 6", slug:"post_6", content: "Test", published_date: yesterday, ...options});
+            await adminClient.post(`/posts`, {title: "Post 1", slug:"post_1", content: "Test", ...options});
+            await adminClient.post(`/posts`, {title: "Post 2", slug:"post_2", content: "Test", published_date: yesterday, ...options});
+            await adminClient.post(`/posts`, {title: "Post 3", slug:"post_3", content: "Test", published_date: tomorrow, ...options});
+            await adminClient.post(`/posts`, {title: "Post 4", slug:"post_4", content: "Test", is_draft: false, published_date: yesterday, ...options});
+            await adminClient.post(`/posts`, {title: "Post 5", slug:"post_5", content: "Test", is_draft: true, published_date: yesterday, ...options});
+            await adminClient.post(`/posts`, {title: "Post 6", slug:"post_6", content: "Test", published_date: yesterday, ...options});
 
             let obj = await publicClient.get(`/posts`);
             expect(obj.posts.length).to.equal(3);
@@ -221,5 +223,167 @@ export default () =>
             expect(obj.posts.length).to.equal(1);
             expect(obj.posts[0].title).to.equal("Post 6");
         });
+
+        it('should return public posts with a specific category', async () => {
+
+            const options1 = await createOptionalData("a");
+            const options2 = await createOptionalData("b");
+            const yesterday = new Date(new Date().getTime() - (24 * 60 * 60 * 1000));
+
+            await adminClient.put(`/setting`, {posts_per_page: 10});
+
+            await adminClient.post("/posts", {title: "Post 1", slug:"post_1", content: "Test", published_date: yesterday, author_id: options1.author_id});
+            await adminClient.post("/posts", {title: "Post 2", slug:"post_2", content: "Test", published_date: yesterday, ...options1});
+            await adminClient.post("/posts", {title: "Post 3", slug:"post_3", content: "Test", published_date: yesterday, ...options1});
+            await adminClient.post("/posts", {title: "Post 4", slug:"post_4", content: "Test", is_draft: false, published_date: yesterday, ...options1});
+            await adminClient.post("/posts", {title: "Post 5", slug:"post_5", content: "Test", is_draft: true, published_date: yesterday, ...options1});
+            await adminClient.post("/posts", {title: "Post 6", slug:"post_6", content: "Test", published_date: yesterday, ...options1});
+            await adminClient.post("/posts", {title: "Post 7", slug:"post_7", content: "Test", published_date: yesterday, ...options2});
+
+            let obj;
+            obj = await publicClient.get(`/category/${options1.category_slug}/posts`);
+            expect(obj.posts.length).to.equal(4);
+            expect(obj.posts[0].title).to.equal("Post 2");
+            expect(obj.posts[1].title).to.equal("Post 3");
+            expect(obj.posts[2].title).to.equal("Post 4");
+            expect(obj.posts[3].title).to.equal("Post 6");
+
+            obj = await publicClient.get(`/category/${options1.category_slug}/posts/page/1`);
+            expect(obj.posts.length).to.equal(4);
+            expect(obj.posts[0].title).to.equal("Post 2");
+            expect(obj.posts[1].title).to.equal("Post 3");
+            expect(obj.posts[2].title).to.equal("Post 4");
+            expect(obj.posts[3].title).to.equal("Post 6");
+
+            obj = await publicClient.get(`/category/${options1.category_slug}/posts/page/2`);
+            expect(obj.posts.length).to.equal(0);
+
+            obj = await publicClient.get(`/category/${options1.category_slug}/posts`);
+            expect(obj.posts.length).to.equal(4);
+            expect(obj.posts[0].title).to.equal("Post 2");
+            expect(obj.posts[1].title).to.equal("Post 3");
+            expect(obj.posts[2].title).to.equal("Post 4");
+            expect(obj.posts[3].title).to.equal("Post 6");
+
+            obj = await publicClient.get(`/category/${options2.category_slug}/posts`);
+            expect(obj.posts.length).to.equal(1);
+            expect(obj.posts[0].title).to.equal("Post 7");
+
+            await adminClient.put("/setting", {posts_per_page: 2});
+            obj = await publicClient.get(`/category/${options1.category_slug}/posts`);
+            expect(obj.posts.length).to.equal(2);
+            expect(obj.posts[0].title).to.equal("Post 2");
+            expect(obj.posts[1].title).to.equal("Post 3");
+
+            obj = await publicClient.get(`/category/${options1.category_slug}/posts/page/2`);
+            expect(obj.posts.length).to.equal(2);
+            expect(obj.posts[0].title).to.equal("Post 4");
+            expect(obj.posts[1].title).to.equal("Post 6");
+        });
+
+        it('should return public posts with a specific author', async () =>
+        {
+            const options1 = await createOptionalData("a");
+            const options2 = await createOptionalData("b");
+            const yesterday = new Date(new Date().getTime() - (24 * 60 * 60 * 1000));
+
+            await adminClient.put("/setting", {posts_per_page: 10});
+
+            await adminClient.post("/posts", {title: "Post 1", slug:"post_1", content: "Test", published_date: yesterday, author_id: options1.author_id});
+            await adminClient.post("/posts", {title: "Post 2", slug:"post_2", content: "Test", published_date: yesterday, author_id: options2.author_id});
+            await adminClient.post("/posts", {title: "Post 3", slug:"post_3", content: "Test", published_date: yesterday, author_id: options1.author_id});
+            await adminClient.post("/posts", {title: "Post 4", slug:"post_4", content: "Test", is_draft: false, published_date: yesterday, author_id: options1.author_id});
+            await adminClient.post("/posts", {title: "Post 5", slug:"post_5", content: "Test", is_draft: true, published_date: yesterday, author_id: options1.author_id});
+            await adminClient.post("/posts", {title: "Post 6", slug:"post_6", content: "Test", published_date: yesterday, author_id: options1.author_id});
+            await adminClient.post("/posts", {title: "Post 7", slug:"post_7", content: "Test", published_date: yesterday, author_id: options2.author_id});
+
+            let obj;
+            obj = await publicClient.get(`/author/${options1.author_slug}/posts`);
+            expect(obj.posts.length).to.equal(4);
+            expect(obj.posts[0].title).to.equal("Post 1");
+            expect(obj.posts[1].title).to.equal("Post 3");
+            expect(obj.posts[2].title).to.equal("Post 4");
+            expect(obj.posts[3].title).to.equal("Post 6");
+
+            obj = await publicClient.get(`/author/${options1.author_slug}/posts/page/1`);
+            expect(obj.posts.length).to.equal(4);
+            expect(obj.posts[0].title).to.equal("Post 1");
+            expect(obj.posts[1].title).to.equal("Post 3");
+            expect(obj.posts[2].title).to.equal("Post 4");
+            expect(obj.posts[3].title).to.equal("Post 6");
+
+            obj = await publicClient.get(`/author/${options1.author_slug}/posts/page/2`);
+            expect(obj.posts.length).to.equal(0);
+
+            obj = await publicClient.get(`/author/${options1.author_slug}/posts`);
+            expect(obj.posts.length).to.equal(4);
+            expect(obj.posts[0].title).to.equal("Post 1");
+            expect(obj.posts[1].title).to.equal("Post 3");
+            expect(obj.posts[2].title).to.equal("Post 4");
+            expect(obj.posts[3].title).to.equal("Post 6");
+
+            obj = await publicClient.get(`/author/${options2.author_slug}/posts`);
+            expect(obj.posts.length).to.equal(2);
+            expect(obj.posts[0].title).to.equal("Post 2");
+            expect(obj.posts[1].title).to.equal("Post 7");
+
+            await adminClient.put("/setting", {posts_per_page: 2});
+
+            obj = await publicClient.get(`/author/${options1.author_slug}/posts`);
+            expect(obj.posts.length).to.equal(2);
+            expect(obj.posts[0].title).to.equal("Post 1");
+            expect(obj.posts[1].title).to.equal("Post 3");
+
+            obj = await publicClient.get(`/author/${options1.author_slug}/posts/page/2`);
+            expect(obj.posts.length).to.equal(2);
+            expect(obj.posts[0].title).to.equal("Post 4");
+            expect(obj.posts[1].title).to.equal("Post 6");
+        });
+
+        it('should return public posts with a specific tag', async () =>
+        {
+            const options = await createOptionalData();
+            const yesterday = new Date(new Date().getTime() - (24 * 60 * 60 * 1000));
+            await adminClient.put("/setting", {posts_per_page: 10});
+
+            await adminClient.post("/posts", {title: "Post 1", slug:"post_1", content: "Test", published_date: yesterday, tags: ["tag1","tag2"], ...options});
+            await adminClient.post("/posts", {title: "Post 2", slug:"post_2", content: "Test", published_date: yesterday, tags: ["tag2"], ...options});
+            await adminClient.post("/posts", {title: "Post 3", slug:"post_3", content: "Test", published_date: yesterday, ...options});
+            await adminClient.post("/posts", {title: "Post 4", slug:"post_4", content: "Test", is_draft: false, published_date: yesterday, tags: ["tag1","tag2"], ...options});
+            await adminClient.post("/posts", {title: "Post 5", slug:"post_5", content: "Test", is_draft: true, published_date: yesterday, tags: ["tag1","tag2"], ...options});
+            await adminClient.post("/posts", {title: "Post 6", slug:"post_6", content: "Test", published_date: yesterday, tags: [], ...options});
+            await adminClient.post("/posts", {title: "Post 7", slug:"post_7", content: "Test", published_date: yesterday, tags: ['tag1'], ...options});
+
+            let obj;
+            obj = await publicClient.get("/tag/tag1/posts");
+            expect(obj.posts.length).to.equal(3);
+            expect(obj.posts[0].title).to.equal("Post 1");
+            expect(obj.posts[1].title).to.equal("Post 4");
+            expect(obj.posts[2].title).to.equal("Post 7");
+        });
+
+        it('should return public posts in the order of publish data', async () =>
+        {
+            const options = await createOptionalData();
+            await adminClient.put("/setting", {posts_per_page: 10});
+
+            const tomorrow = new Date(new Date().getTime() + (24 * 60 * 60 * 1000));
+            const yesterday = new Date(new Date().getTime() - (24 * 60 * 60 * 1000));
+            const twoDaysAgo = new Date(new Date().getTime() - (24 * 60 * 60 * 1000) * 2);
+            const threeDaysAgo = new Date(new Date().getTime() - (24 * 60 * 60 * 1000) * 3);
+
+            await adminClient.post("/posts", {title: "Post 1", slug:"post_1", content: "Test", published_date: twoDaysAgo, ...options});
+            await adminClient.post("/posts", {title: "Post 2", slug:"post_2", content: "Test", published_date: yesterday, ...options});
+            await adminClient.post("/posts", {title: "Post 3", slug:"post_3", content: "Test", published_date: tomorrow, ...options});
+            await adminClient.post("/posts", {title: "Post 4", slug:"post_4", content: "Test", is_draft: false, published_date: threeDaysAgo, ...options});
+            await adminClient.post("/posts", {title: "Post 5", slug:"post_5", content: "Test", is_draft: true, published_date: yesterday, ...options});
+
+            let obj = await publicClient.get("/posts/");
+            expect(obj.posts.length).to.equal(3);
+            expect(obj.posts[0].title).to.equal("Post 2");
+            expect(obj.posts[1].title).to.equal("Post 1");
+            expect(obj.posts[2].title).to.equal("Post 4");
+        });
+
     });
 };

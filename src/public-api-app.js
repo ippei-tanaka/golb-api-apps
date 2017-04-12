@@ -84,7 +84,7 @@ const createRouter = () =>
 {
     const router = Router();
 
-    router.get(/^\/posts(\/category\/[^/]+)?(\/author\/[^/]+)?(\/tag\/[^/]+)?(\/|\/page\/[0-9]+\/?)?$/,
+    router.get(/^(\/category\/[^/]+)?(\/author\/[^/]+)?(\/tag\/[^/]+)?\/?posts\/?(\/|\/page\/[0-9]+\/?)?$/,
 
         async (request, response) =>
         {
