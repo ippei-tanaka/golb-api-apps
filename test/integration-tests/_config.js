@@ -36,5 +36,6 @@ export const settings = {
     adminSlug: admin.slug,
     sessionSecret: "sdnIdjSe2AE2SADfD",
     adminApiRoot: "/admin-api",
-    publicApiRoot: "/public-api"
+    publicApiRoot: "/public-api",
+    silent: true
 };
