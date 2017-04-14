@@ -1,6 +1,6 @@
 import express from 'express';
 import {settings} from './_config';
-import {AdminApiApp, PublicApiApp} from '../../src/app';
+import {AdminApiApp, PublicApiApp} from '../../src';
 
 let server;
 let app;

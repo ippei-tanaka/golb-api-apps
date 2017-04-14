@@ -1,10 +1,10 @@
 {
     "name": "golb-api-apps",
     "version": "1.0.0",
-    "main": "lib/app.js",
+    "main": "lib/index.js",
     "license": "MIT",
     "scripts": {
-        "dev": "babel-node src/app.js",
+        "dev": "babel-node src/index.js",
         "test": "mocha $(find test -name '*.test.js') --compilers js:babel-core/register",
         "compile": "NODE_ENV=production npm-run-all compile:*",
         "compile:clear": "rimraf lib",
