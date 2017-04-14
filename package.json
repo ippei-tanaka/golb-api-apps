@@ -1,5 +1,5 @@
 {
-    "name": "golb-api-apps",
+    "name": "golb-rest-api",
     "version": "1.0.0",
     "main": "lib/index.js",
     "license": "MIT",
