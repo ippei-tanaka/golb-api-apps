@@ -1,6 +1,6 @@
 import {mongoDbBaseOperator, mongoDriver} from 'simple-odm';
 import {settings} from './_config';
-import * as runner from '../../src/runner';
+import {server} from '../../src';
 
 describe('Integration Tests', function ()
 {
@@ -11,11 +11,11 @@ describe('Integration Tests', function ()
     });
 
     before('dropping database', mongoDbBaseOperator.dropDatabase);
-    before('web server stopping', runner.stop.bind(null, settings));
-    before('web server starting', runner.start.bind(null, settings));
+    before('web server stopping', () => server.stop(settings));
+    before('web server starting', () => server.start(settings));
     beforeEach('emptying collections', mongoDbBaseOperator.removeAllDocuments);
-    beforeEach('creating an admin', runner.createAdmin.bind(null, settings));
-    after('web server stopping', runner.stop.bind(null, settings));
+    beforeEach('creating an admin', () => server.createAdmin(settings));
+    after('web server stopping', () => server.stop(settings));
 
     require('./resource-home')();
     require('./resource-authentication')();
