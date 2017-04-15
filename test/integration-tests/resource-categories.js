@@ -67,16 +67,17 @@ export default () =>
         {
             const cat1 = {name: 'Category Name', slug: 'my0slug1'};
             const cat2 = {name: 'Rondom Name', slug: 'my0slug1'};
+            let error;
 
             try
             {
                 await adminClient.post(`/categories`, cat1);
                 await adminClient.post(`/categories`, cat2);
             } catch (e) {
-                return;
+                error = e;
             }
 
-            throw new Error();
+            expect(error.body.slug[0]).to.equal('The slug, "my0slug1", has already been taken.');
         });
 
         it('should not create a new category if the posted object has an empty value for a required field.', async () =>
