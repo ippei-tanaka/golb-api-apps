@@ -57,13 +57,6 @@ export default () =>
 
         it('should not create a new user if their email is duplicated', async () =>
         {
-            const {_id} = await adminClient.post("/users", testUser);
-            const user = await adminClient.get(`/users/${_id}`);
-            expect(user._id).to.equal(_id);
-        });
-
-        it('should not include a password in the retrieved user data', async () =>
-        {
             let error;
 
             try {
@@ -74,9 +67,14 @@ export default () =>
                 error = e;
             }
 
-            console.log(error);
-
             expect(error.body.email[0]).to.equal(`The email, "${testUser.email}", has already been taken.`);
+        });
+
+        it('should not include a password in the retrieved user data', async () =>
+        {
+            const {_id} = await adminClient.post("/users", testUser);
+            const user = await adminClient.get(`/users/${_id}`);
+            expect(user).to.not.have.property('password');
         });
 
         it("should update a user's display name", async () =>

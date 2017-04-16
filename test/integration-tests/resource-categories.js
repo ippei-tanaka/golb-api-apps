@@ -151,8 +151,6 @@ export default () =>
                 error = e;
             }
 
-            console.log(error);
-
             expect(error.body.slug[0]).to.equal('The slug, "foo", has already been taken.');
         });
 
