@@ -70,6 +70,21 @@ export default () =>
             expect(error.body.email[0]).to.equal(`The email, "${testUser.email}", has already been taken.`);
         });
 
+        it('should not create a new user if their slug is duplicated', async () =>
+        {
+            let error;
+
+            try {
+                await adminClient.post("/users", testUser);
+                await adminClient.post("/users", {...testUser, email: testUser.email + "ee"});
+            } catch (e)
+            {
+                error = e;
+            }
+
+            expect(error.body.slug[0]).to.equal(`The slug, "${testUser.slug}", has already been taken.`);
+        });
+
         it('should not include a password in the retrieved user data', async () =>
         {
             const {_id} = await adminClient.post("/users", testUser);
