@@ -107,6 +107,26 @@ export default () =>
             expect(user.display_name).to.equal("My new name");
         });
 
+        it("should not update a user's email if the new email is duplicated", async () =>
+        {
+            let error;
+
+            try
+            {
+                await adminClient.post("/users", testUser);
+                const {_id} = await adminClient.post("/users", {...testUser, email: testUser.email + "dd", slug: testUser.slug + "rr"});
+                await adminClient.put(`/users/${_id}`, {
+                    email: testUser.email
+                });
+            }
+            catch (e)
+            {
+                error = e;
+            }
+
+            expect(error.body.email[0]).to.equal(`The email, "${testUser.email}", has already been taken.`);
+        });
+
         it("should not update a user's password on '/users/:id/' path", async () =>
         {
             let error;
