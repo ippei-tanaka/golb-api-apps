@@ -55,11 +55,28 @@ export default () =>
             expect(errors.body.slug[0]).to.equal("The slug is required.");
         });
 
-        it('should not include a password in the retrieved user data', async () =>
+        it('should not create a new user if their email is duplicated', async () =>
         {
             const {_id} = await adminClient.post("/users", testUser);
             const user = await adminClient.get(`/users/${_id}`);
-            expect(user).to.not.have.property('password');
+            expect(user._id).to.equal(_id);
+        });
+
+        it('should not include a password in the retrieved user data', async () =>
+        {
+            let error;
+
+            try {
+                await adminClient.post("/users", testUser);
+                await adminClient.post("/users", {...testUser, slug: testUser.slug + "123"});
+            } catch (e)
+            {
+                error = e;
+            }
+
+            console.log(error);
+
+            expect(error.body.email[0]).to.equal(`The email, "${testUser.email}", has already been taken.`);
         });
 
         it("should update a user's display name", async () =>
