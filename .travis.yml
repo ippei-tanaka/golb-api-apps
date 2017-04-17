@@ -8,15 +8,6 @@ node_js:
 
 sudo: false
 
-addons:
-  apt:
-    sources:
-      - mongodb-upstart
-      - mongodb-3.0-precise
-    packages:
-      - mongodb-org-server
-      - mongodb-org-shell
-
 env:
   - CXX=g++-4.8
 
@@ -24,8 +15,12 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
+      - mongodb-upstart
+      - mongodb-3.0-precise
     packages:
       - g++-4.8
+      - mongodb-org-server
+      - mongodb-org-shell
 
 notifications:
   email: false
