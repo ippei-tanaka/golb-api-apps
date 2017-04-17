@@ -107,7 +107,7 @@ export default () =>
             expect(user.display_name).to.equal("My new name");
         });
 
-        it("should not update a user's email if the new email is duplicated", async () =>
+        it("should not update a user's email if the new email is duplicated.", async () =>
         {
             let error;
 
