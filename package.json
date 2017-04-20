@@ -18,7 +18,7 @@
         "compile": "NODE_ENV=production npm-run-all compile:*",
         "compile:clear": "rimraf lib",
         "compile:build": "babel ./src --out-dir lib --copy-files --ignore bundle",
-        "prepublish": "NODE_ENV=production compile"
+        "prepublish": "NODE_ENV=production npm run compile"
     },
     "dependencies": {
         "bcrypt": "^1.0.2",
