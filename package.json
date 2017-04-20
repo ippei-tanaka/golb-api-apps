@@ -1,7 +1,7 @@
 {
     "name": "golb-rest-api",
     "version": "0.0.3",
-    "main": "lib/index.js",
+    "main": "dist/index.js",
     "license": "MIT",
     "author": {
         "name": "Ippei Tanaka",
@@ -16,8 +16,8 @@
         "dev": "babel-node src/index.js",
         "test": "mocha $(find test -name '*.test.js') --compilers js:babel-core/register",
         "compile": "NODE_ENV=production npm-run-all compile:*",
-        "compile:clear": "rimraf lib",
-        "compile:build": "babel ./src --out-dir lib --copy-files --ignore bundle",
+        "compile:clear": "rimraf dist",
+        "compile:build": "babel ./src --out-dir dist --copy-files --ignore bundle",
         "prepublish": "NODE_ENV=production npm run compile"
     },
     "dependencies": {

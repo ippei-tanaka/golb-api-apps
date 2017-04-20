@@ -1,8 +1,9 @@
+src/
 test/
+node_modules/
+.travis.yml
 .babelrc
 .gitignore
-npm-debug.log
 .idea/
-node_modules/
+npm-debug.log
 .DS_Store
-src/
