@@ -1,6 +1,6 @@
 {
     "name": "golb-rest-api",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "main": "lib/index.js",
     "license": "MIT",
     "author": {
@@ -17,7 +17,8 @@
         "test": "mocha $(find test -name '*.test.js') --compilers js:babel-core/register",
         "compile": "NODE_ENV=production npm-run-all compile:*",
         "compile:clear": "rimraf lib",
-        "compile:build": "babel ./src --out-dir lib --copy-files --ignore bundle"
+        "compile:build": "babel ./src --out-dir lib --copy-files --ignore bundle",
+        "prepublish": "NODE_ENV=production compile"
     },
     "dependencies": {
         "bcrypt": "^1.0.2",
