@@ -1,9 +1,10 @@
-src/
-test/
-node_modules/
+/src/
+/test/
+/node_modules/
 .travis.yml
 .babelrc
 .gitignore
-.idea/
+/.idea/
 npm-debug.log
 .DS_Store
+yarn.lock

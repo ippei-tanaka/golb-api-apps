@@ -20,6 +20,10 @@
     "compile:build": "babel ./src --out-dir dist --copy-files --ignore bundle",
     "prepublish": "NODE_ENV=production npm run compile"
   },
+  "files": [
+    "dist/",
+    "README.md"
+  ],
   "dependencies": {
     "bcrypt": "^1.0.2",
     "body-parser": "^1.17.1",
