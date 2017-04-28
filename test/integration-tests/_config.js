@@ -28,7 +28,7 @@ export const testPost = Object.freeze({
 
 export const settings = {
     webHost: "localhost",
-    webPort: 3004,
+    webPort: 3002,
     dbName: "weblogjstest",
     adminEmail: admin.email,
     adminPassword: admin.password,
@@ -36,6 +36,5 @@ export const settings = {
     adminSlug: admin.slug,
     sessionSecret: "sdnIdjSe2AE2SADfD",
     adminApiRoot: "/admin-api",
-    publicApiRoot: "/public-api",
-    silent: true
+    publicApiRoot: "/public-api"
 };

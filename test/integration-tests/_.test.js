@@ -1,6 +1,6 @@
 import {mongoDbBaseOperator, mongoDriver} from 'simple-odm';
 import {settings} from './_config';
-import {server} from '../../src';
+import * as server from '../../test-server/server';
 
 describe('Integration Tests', function ()
 {
