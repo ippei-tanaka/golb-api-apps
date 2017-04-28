@@ -1,4 +1,3 @@
-import co from 'co';
 import { MongoModel } from 'simple-odm';
 import schema from './setting-schema';
 
@@ -23,31 +22,31 @@ export default class SettingModel extends MongoModel {
     static getSetting () {
         const findOne = super.findOne.bind(this);
 
-        return co(function* () {
-            const model = yield findOne();
+        return (async () => {
+            const model = await findOne();
 
             if (model) {
                 return model;
             } else {
-                yield this.setSetting({});
-                return yield findOne();
+                await this.setSetting({});
+                return await findOne();
             }
-        }.bind(this));
+        })();
     }
 
     static setSetting (values) {
         const findOne = super.findOne.bind(this);
 
-        return co(function* () {
-            let model = yield findOne();
+        return (async () => {
+            let model = await findOne();
 
             if (model) {
                 Object.assign(model.values, values);
-                yield model.save();
+                await model.save();
             } else {
                 model = new this(values);
-                yield model.save();
+                await model.save();
             }
-        }.bind(this));
+        })();
     }
 }

@@ -4,7 +4,11 @@ import {URL} from 'url';
 
 const url = new URL(`http://${config.webHost}:${config.webPort}`);
 
-server.start(config).then(() => {
+(async () =>
+{
+    await server.start(config);
+    await server.createAdmin(config);
+
     console.log("The web server has stated.\n");
 
     url.pathname = config.adminApiRoot;
@@ -12,4 +16,4 @@ server.start(config).then(() => {
 
     url.pathname = config.publicApiRoot;
     console.log(`${url.toString()} (Public API)`);
-});
+})();

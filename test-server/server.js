@@ -1,6 +1,7 @@
 import express from 'express';
 import {AdminApiApp, PublicApiApp} from '../src';
 import cors from 'cors';
+import path from 'path';
 
 let server;
 let app;
@@ -13,6 +14,7 @@ export const start = async (config) =>
     {
         app = express();
         app.use(cors());
+        app.use(express.static(path.resolve(__dirname, "static")));
     }
 
     if (!adminApiApp)

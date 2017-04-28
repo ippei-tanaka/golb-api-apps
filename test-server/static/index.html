@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test</title>
+    <script
+            src="https://code.jquery.com/jquery-3.2.1.js"
+            integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
+            crossorigin="anonymous"></script>
+    <script>
+        $(function () {
+            $('#Form').on('submit', function (e) {
+                e.preventDefault();
+                var email = $("[name='email']").val();
+                var password = $("[name='password']").val();
+
+                $.post('/admin-api/login', {email, password}).then(console.log)
+            })
+        });
+    </script>
+</head>
+<body>
+<form id="Form">
+    Email:<input name="email" type="email" /><br />
+    Password:<input name="password" type="password" /><br />
+    <button>test</button>
+</form>
+</body>
+</html>
