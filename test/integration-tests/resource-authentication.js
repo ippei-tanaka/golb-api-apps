@@ -39,5 +39,37 @@ export default () =>
             await adminClient.get("/users");
             await adminClient.get("/logout");
         });
+
+        it('should return an error if the email doesn\'t exist in the DB.', async () =>
+        {
+            let error;
+
+            try
+            {
+                await adminClient.post("/login", {...admin, email: "td@dsad.cc"});
+            }
+            catch (e)
+            {
+                error = e;
+            }
+
+            expect(error.body.message.email[0]).to.equal('The email , "td@dsad.cc", is not registered.');
+        });
+
+        it('should return an error if the password is wrong.', async () =>
+        {
+            let error;
+
+            try
+            {
+                await adminClient.post("/login", {...admin, password: "1234123dsaf32"});
+            }
+            catch (e)
+            {
+                error = e;
+            }
+
+            expect(error.body.message.password[0]).to.equal('The submitted password is wrong.');
+        });
     });
 };

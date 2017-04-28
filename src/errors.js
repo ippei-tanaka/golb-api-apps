@@ -1,4 +1,4 @@
-class WeblogJsError extends Error {
+class GolbError extends Error {
     constructor(message) {
         super(message);
 
@@ -20,7 +20,19 @@ class WeblogJsError extends Error {
     }
 }
 
-export let SyntaxError = class WeblogJsSyntaxError extends WeblogJsError {
+export let SyntaxError = class GolbSyntaxError extends GolbError {
+    constructor(message) {
+        super(message);
+    }
+};
+
+export let AuthorizationError = class GolbAuthorizationError extends GolbError {
+    constructor(message) {
+        super(message);
+    }
+};
+
+export let AuthenticationError = class GolbAuthenticationError extends GolbError {
     constructor(message) {
         super(message);
     }

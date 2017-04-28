@@ -77,7 +77,7 @@ export default () =>
                 error = e;
             }
 
-            expect(error.body.slug[0]).to.equal('The slug, "my0slug1", has already been taken.');
+            expect(error.body.message.slug[0]).to.equal('The slug, "my0slug1", has already been taken.');
         });
 
         it('should not create a new category if the posted object has an empty value for a required field.', async () =>
@@ -96,7 +96,7 @@ export default () =>
                 error = e;
             }
 
-            expect(error.body.name[0]).to.equal('The name is required.');
+            expect(error.body.message.name[0]).to.equal('The name is required.');
         });
 
         it('should not create a new category if the posted object has an invalid value.', async () =>
@@ -115,7 +115,7 @@ export default () =>
                 error = e;
             }
 
-            expect(error.body.slug[0]).to.equal('Only alphabets, numbers and some symbols (-, _) are allowed for a slug.');
+            expect(error.body.message.slug[0]).to.equal('Only alphabets, numbers and some symbols (-, _) are allowed for a slug.');
         });
 
         it('should partially update a category', async () =>
@@ -151,7 +151,7 @@ export default () =>
                 error = e;
             }
 
-            expect(error.body.slug[0]).to.equal('The slug, "foo", has already been taken.');
+            expect(error.body.message.slug[0]).to.equal('The slug, "foo", has already been taken.');
         });
 
         it('should not update a category if the posted object is not valid.', async () =>
@@ -174,7 +174,7 @@ export default () =>
                 error = e;
             }
 
-            expect(error.body.slug[0]).to.equal('Only alphabets, numbers and some symbols (-, _) are allowed for a slug.');
+            expect(error.body.message.slug[0]).to.equal('Only alphabets, numbers and some symbols (-, _) are allowed for a slug.');
         });
 
         it('should delete a category', async () =>

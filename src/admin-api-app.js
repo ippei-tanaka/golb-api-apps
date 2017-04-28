@@ -7,37 +7,142 @@ import PostModel from './models/post-model';
 import SettingModel from './models/setting-model';
 import setUpDbConnection from './models/setup-db-connection';
 import {ObjectID} from 'mongodb';
-import {successHandler, errorHandler, parseParameters, isLoggedIn, isLoggedOut} from './handlers';
+import {UNAUTHORIZED, BAD_REQUEST, OK} from './status-codes';
+import {parse} from './parameter-parser';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import expressSession from 'express-session';
+import {AuthenticationError, AuthorizationError} from './errors';
 
-const createRouterForCrudOperations = (Model, filter) =>
+/**
+ * Express Middleware Callbacks
+ */
+
+const bypass = (request, response, next) => next();
+
+const isLoggedIn = (request, response, next) =>
+{
+    if (request.isAuthenticated())
+        return next();
+
+    response.type('json').status(UNAUTHORIZED).json(new AuthorizationError({}));
+};
+
+const isLoggedOut = (request, response, next) =>
+{
+    if (!request.isAuthenticated())
+        return next();
+
+    response.type('json').status(UNAUTHORIZED).json(new AuthorizationError({}));
+};
+
+const logIn = (...args) =>
+{
+    const [request, response] = args;
+
+    (async () =>
+    {
+        const foundUser = await UserModel.findOne({email: request.body.email});
+
+        if (!foundUser)
+        {
+            response.type('json').status(BAD_REQUEST).json(new AuthenticationError({
+                email: [`The email , "${request.body.email}", is not registered.`]
+            }));
+            return;
+        }
+
+        const [authenticationError, authenticatedUser] = await new Promise((resolve) => {
+            PassportManager.authenticate((error, user) => {
+                resolve([error, user]);
+            })(...args);
+        });
+
+        if (authenticationError)
+        {
+            response.type('json').status(BAD_REQUEST).json(authenticationError);
+            return;
+        }
+
+        if (!authenticatedUser)
+        {
+            response.type('json').status(BAD_REQUEST).json(new AuthenticationError({
+                password: ["The submitted password is wrong."]
+            }));
+            return;
+        }
+
+        const loginProcessError = await new Promise((resolve) => {
+            request.login(authenticatedUser, (error) => resolve(error));
+        });
+
+        if (loginProcessError)
+        {
+            response.type('json').status(BAD_REQUEST).json(loginProcessError);
+            return;
+        }
+
+        response.type('json').status(OK).json({});
+
+    })();
+};
+
+const logOut = (request, response) =>
+{
+    try
+    {
+        request.logout(new AuthenticationError({}));
+    }
+    catch (e)
+    {
+        response.type('json').status(BAD_REQUEST).json({});
+        return;
+    }
+
+    response.type('json').status(OK).json({});
+};
+
+const respond = (asyncFn = async () => {}) =>
+{
+    return (request, response, next) =>
+    {
+        asyncFn(request, response, next)
+            .then((data = {}) =>
+            {
+                response.type('json').status(OK).json(data);
+            })
+            .catch((error = {}) =>
+            {
+                response.type('json').status(BAD_REQUEST).json(error);
+            });
+    };
+};
+
+const createRouterForCrudOperations = (Model) =>
 {
     const router = new Router();
     const path = pluralize(Model.name);
 
-    router.get(`/${path}`, filter, (request, response) => (async () =>
+    router.get(`/${path}`, isLoggedIn, respond(async (request) =>
     {
-        const {query, sort, limit, skip} = parseParameters(request.url);
+        const {query, sort, limit, skip} = parse(request.url);
         const models = await Model.findMany({query, sort, limit, skip});
-        successHandler(response, {items: models});
-    })().catch(errorHandler(response)));
+        return {items: models};
+    }));
 
-    router.get(`/${path}/:id`, filter, (request, response) => (async () =>
+    router.get(`/${path}/:id`, isLoggedIn, respond(async (request) =>
     {
-        const model = await Model.findOne({_id: new ObjectID(request.params.id)});
-        successHandler(response, model);
-    })().catch(errorHandler(response)));
+        return await Model.findOne({_id: new ObjectID(request.params.id)});
+    }));
 
-    router.post(`/${path}`, filter, (request, response) => (async () =>
+    router.post(`/${path}`, isLoggedIn, respond(async (request) =>
     {
         const model = new Model(request.body);
         await model.save();
-        successHandler(response, {_id: model.id});
-    })().catch(errorHandler(response)));
+        return {_id: model.id};
+    }));
 
-    router.put(`/${path}/:id`, filter, (request, response) => (async () =>
+    router.put(`/${path}/:id`, isLoggedIn, respond(async (request) =>
     {
         const model = await Model.findOne({_id: new ObjectID(request.params.id)});
 
@@ -46,32 +151,23 @@ const createRouterForCrudOperations = (Model, filter) =>
             Object.assign(model.values, request.body);
             await model.save();
         }
-        successHandler(response, {});
-    })().catch(errorHandler(response)));
+    }));
 
-    router.delete(`/${path}/:id`, filter, (request, response) => (async () =>
+    router.delete(`/${path}/:id`, isLoggedIn, respond(async (request) =>
     {
         await Model.deleteOne({_id: new ObjectID(request.params.id)});
-        successHandler(response, {});
-    })().catch(errorHandler(response)));
+    }));
 
     return router;
 };
 
-const createRouterForAuth = (loginCheck, logoutCheck, authentication) =>
+const createRouterForAuth = () =>
 {
     const router = new Router();
 
-    router.post('/login', logoutCheck, authentication, (request, response) =>
-    {
-        successHandler(response, {});
-    });
+    router.post('/login', isLoggedOut, logIn);
 
-    router.get('/logout', loginCheck, (request, response) =>
-    {
-        request.logout();
-        successHandler(response, {});
-    });
+    router.get('/logout', isLoggedIn, logOut);
 
     return router;
 };
@@ -80,32 +176,28 @@ const createRouterForHome = () =>
 {
     const router = new Router();
 
-    router.get(`/`, (request, response) => (async () =>
-    {
-        successHandler(response, {});
-    })().catch(errorHandler(response)));
+    router.get(`/`, respond());
 
     return router;
 };
 
-const createRouterForUser = (filter) =>
+const createRouterForUser = () =>
 {
     const router = new Router();
 
-    router.get(`/users/me`, filter, (request, response) => (async () =>
+    router.get(`/users/me`, isLoggedIn, respond(async (request) =>
     {
         if (request.user)
         {
-            const model = await UserModel.findOne({_id: new ObjectID(request.user._id)});
-            successHandler(response, model);
+            return await UserModel.findOne({_id: new ObjectID(request.user._id)});
         }
         else
         {
-            successHandler(response, null);
+            throw new AuthenticationError({email: "The email isn't registered."});
         }
-    })().catch(errorHandler(response)));
+    }));
 
-    router.put(`/users/:id/password`, filter, (request, response) => (async () =>
+    router.put(`/users/:id/password`, isLoggedIn, respond(async (request) =>
     {
         const model = await UserModel.findOne({_id: new ObjectID(request.params.id)});
 
@@ -115,81 +207,28 @@ const createRouterForUser = (filter) =>
             await model.save();
         }
 
-        successHandler(response, {});
-    })().catch(errorHandler(response)));
+    }));
 
     return router;
 };
 
-const createRoutesForSetting = (filter) =>
+const createRoutesForSetting = () =>
 {
     const router = new Router();
 
-    router.get(`/setting`, filter, (request, response) => (async () =>
+    router.get(`/setting`, isLoggedIn, respond(async () =>
     {
-        const model = await SettingModel.getSetting();
-        successHandler(response, model);
-    })().catch(errorHandler(response)));
+        return await SettingModel.getSetting();
+    }));
 
-    router.put(`/setting`, filter, (request, response) => (async () =>
+    router.put(`/setting`, isLoggedIn, respond(async (request) =>
     {
         await SettingModel.setSetting(request.body);
-        successHandler(response, {});
-    })().catch(errorHandler(response)));
+    }));
 
     return router;
 };
 
-
-/*
-
-const addRoutesForThemes = (app, filter) =>
-{
-    const themeDir = path.resolve(__dirname, '../public-app/static/bundle/themes');
-
-    app.get(`/themes`, filter, (request, response) => co(function* ()
-    {
-        const fileNames = yield new Promise((res, rej) => fs.readdir(themeDir, (err, result) =>
-        {
-            if (err) return rej(err);
-        res(result);
-    }));
-
-        const nameCounts = {};
-        const regexBase = /^(.+)-base\.css$/;
-        const regexPost = /^(.+)-post\.css$/;
-
-        for (const fileName of fileNames)
-        {
-            if (regexBase.test(fileName))
-            {
-                const name = RegExp.$1;
-                nameCounts[name] = Number.isInteger(nameCounts[name]) ? nameCounts[name] + 1 : 1;
-            }
-            else if (regexPost.test(fileName))
-            {
-                const name = RegExp.$1;
-                nameCounts[name] = Number.isInteger(nameCounts[name]) ? nameCounts[name] + 1 : 1;
-            }
-        }
-
-        const items = [];
-
-        for (const name of Object.keys(nameCounts))
-        {
-            if (nameCounts[name] >= 2)
-            {
-                items.push({name});
-            }
-        }
-
-        successHandler(response, {items});
-
-    }).catch(errorHandler(response)));
-
-    return app;
-};
-*/
 
 export default class AdminApiApp {
 
@@ -208,18 +247,18 @@ export default class AdminApiApp {
             saveUninitialized: true
         }));
 
-        app.use(PassportManager.passport.initialize());
-        app.use(PassportManager.passport.session());
+        app.use(PassportManager.initialize());
+        app.use(PassportManager.session());
 
         // The order of those functions matters.
 
         app.use(createRouterForHome());
-        app.use(createRouterForAuth(isLoggedIn, isLoggedOut, PassportManager.localAuth));
-        app.use(createRouterForUser(isLoggedIn));
-        app.use(createRouterForCrudOperations(UserModel, isLoggedIn));
-        app.use(createRouterForCrudOperations(CategoryModel, isLoggedIn));
-        app.use(createRouterForCrudOperations(PostModel, isLoggedIn));
-        app.use(createRoutesForSetting(isLoggedIn));
+        app.use(createRouterForAuth());
+        app.use(createRouterForUser());
+        app.use(createRouterForCrudOperations(UserModel));
+        app.use(createRouterForCrudOperations(CategoryModel));
+        app.use(createRouterForCrudOperations(PostModel));
+        app.use(createRoutesForSetting());
 
         // adding class methods to the express app
 

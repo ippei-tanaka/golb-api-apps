@@ -1,49 +1,7 @@
 import { SyntaxError } from './errors';
 import url from 'url';
-import { SimpleOdmValidationError } from 'simple-odm'
 
-export const bypass = (request, response, next) => next();
-
-export const isLoggedIn = (request, response, next) =>
-{
-    if (request.isAuthenticated())
-        return next();
-
-    response.type('json').status(401).json({});
-};
-
-export const isLoggedOut = (request, response, next) =>
-{
-    if (!request.isAuthenticated())
-        return next();
-
-    response.type('json').status(401).json({});
-};
-
-export const successHandler = (response, obj, code = 200) =>
-{
-    response.type('json').status(code).json(obj);
-};
-
-export const errorHandler = (response, code = 400) =>
-{
-    return error =>
-    {
-
-        if (error instanceof SimpleOdmValidationError)
-        {
-            response.type('json').status(code).json(error.message);
-        }
-        else
-        {
-            if (error && error.stack) console.error(error.stack);
-
-            response.type('json').status(code).json(error);
-        }
-    }
-};
-
-export const parseParameters = (_url) =>
+export const parse = (_url) =>
 {
     const obj = url.parse(_url, true);
 

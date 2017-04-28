@@ -49,10 +49,10 @@ export default () =>
                 errors = e;
             }
 
-            expect(errors.body.email[0]).to.equal("The email is required.");
-            expect(errors.body.password[0]).to.equal("The password is required.");
-            expect(errors.body.display_name[0]).to.equal("The display name is required.");
-            expect(errors.body.slug[0]).to.equal("The slug is required.");
+            expect(errors.body.message.email[0]).to.equal("The email is required.");
+            expect(errors.body.message.password[0]).to.equal("The password is required.");
+            expect(errors.body.message.display_name[0]).to.equal("The display name is required.");
+            expect(errors.body.message.slug[0]).to.equal("The slug is required.");
         });
 
         it('should not create a new user if their email is duplicated', async () =>
@@ -67,7 +67,7 @@ export default () =>
                 error = e;
             }
 
-            expect(error.body.email[0]).to.equal(`The email, "${testUser.email}", has already been taken.`);
+            expect(error.body.message.email[0]).to.equal(`The email, "${testUser.email}", has already been taken.`);
         });
 
         it('should not create a new user if their slug is duplicated', async () =>
@@ -82,7 +82,7 @@ export default () =>
                 error = e;
             }
 
-            expect(error.body.slug[0]).to.equal(`The slug, "${testUser.slug}", has already been taken.`);
+            expect(error.body.message.slug[0]).to.equal(`The slug, "${testUser.slug}", has already been taken.`);
         });
 
         it('should not include a password in the retrieved user data', async () =>
@@ -124,7 +124,7 @@ export default () =>
                 error = e;
             }
 
-            expect(error.body.email[0]).to.equal(`The email, "${testUser.email}", has already been taken.`);
+            expect(error.body.message.email[0]).to.equal(`The email, "${testUser.email}", has already been taken.`);
         });
 
         it("should not update a user's password on '/users/:id/' path", async () =>
@@ -145,7 +145,7 @@ export default () =>
                 error = e;
             }
 
-            expect(error.body.password[0]).to.equal("The password can't be updated.");
+            expect(error.body.message.password[0]).to.equal("The password can't be updated.");
         });
 
         it("should not update a user's password unless the confirmed password and their old password is sent", async () =>
@@ -164,8 +164,8 @@ export default () =>
                 error = e;
             }
 
-            expect(error.body.old_password[0]).to.equal('The current password is required.');
-            expect(error.body.password_confirmed[0]).to.equal('The confirmed password is required.');
+            expect(error.body.message.old_password[0]).to.equal('The current password is required.');
+            expect(error.body.message.password_confirmed[0]).to.equal('The confirmed password is required.');
         });
 
         it("should not update a user's password if the new password isn't sent", async () =>
@@ -186,7 +186,7 @@ export default () =>
                 error = e;
             }
 
-            expect(error.body.password[0]).to.equal('The new password is required.');
+            expect(error.body.message.password[0]).to.equal('The new password is required.');
         });
 
         it("should update a user's password if the confirmed password and their old password is sent", async () =>
@@ -219,10 +219,10 @@ export default () =>
                 error = e;
             }
 
-            expect(error.body.password[0]).to
+            expect(error.body.message.password[0]).to
                                           .equal('Only alphabets, numbers and some symbols (#, !, @, %, &, *) are allowed for a password.');
-            expect(error.body.password_confirmed[0]).to.equal('The confirmed password is required.');
-            expect(error.body.old_password[0]).to.equal('The current password sent is not correct.');
+            expect(error.body.message.password_confirmed[0]).to.equal('The confirmed password is required.');
+            expect(error.body.message.old_password[0]).to.equal('The current password sent is not correct.');
         });
 
         it("should not update a user's password if their old password is wrong", async () =>
@@ -244,7 +244,7 @@ export default () =>
                 error = e;
             }
 
-            expect(error.body.old_password[0]).to.equal('The current password sent is not correct.');
+            expect(error.body.message.old_password[0]).to.equal('The current password sent is not correct.');
         });
 
         it("should not update a user's password if the confirmed password is wrong", async () =>
@@ -266,7 +266,7 @@ export default () =>
                 error = e;
             }
 
-            expect(error.body.password_confirmed[0]).to
+            expect(error.body.message.password_confirmed[0]).to
                                                     .equal('The confirmed password sent is not the same as the new password.');
         });
 

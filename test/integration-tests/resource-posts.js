@@ -93,7 +93,7 @@ export default () =>
                 error = e;
             }
 
-            expect(error.body.author_id[0]).to.equal('The author ID, "ddddd", is invalid.');
+            expect(error.body.message.author_id[0]).to.equal('The author ID, "ddddd", is invalid.');
         });
 
         it('should return a list of posts', async () =>

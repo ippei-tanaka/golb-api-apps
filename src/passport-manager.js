@@ -1,9 +1,7 @@
 import passport from 'passport';
-import { Strategy as LocalStrategy } from 'passport-local';
-import { ObjectID } from 'mongodb';
+import {Strategy as LocalStrategy} from 'passport-local';
+import {ObjectID} from 'mongodb';
 import UserModel from './models/user-model';
-
-const localAuth = passport.authenticate('local');
 
 passport.use(new LocalStrategy({usernameField: 'email'}, (email, password, done) => (async () =>
 {
@@ -43,14 +41,18 @@ passport.deserializeUser((_id, done) => (async () =>
 
 export default {
 
-    get passport ()
+    initialize: () =>
     {
-        return passport;
+        return passport.initialize();
     },
 
-    get localAuth ()
+    session: () =>
     {
-        return localAuth;
-    }
+        return passport.session();
+    },
 
+    authenticate: (callback) =>
+    {
+        return passport.authenticate('local', callback);
+    }
 }
