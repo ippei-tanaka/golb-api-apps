@@ -7,7 +7,7 @@ import PostModel from './models/post-model';
 import SettingModel from './models/setting-model';
 import setUpDbConnection from './models/setup-db-connection';
 import {ObjectID} from 'mongodb';
-import {UNAUTHORIZED, BAD_REQUEST, OK} from './status-codes';
+import {UNAUTHORIZED, BAD_REQUEST, OK, ERROR} from './status-codes';
 import {parse} from './parameter-parser';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
@@ -60,7 +60,8 @@ const logIn = (...args) =>
 
         if (authenticationError)
         {
-            response.type('json').status(BAD_REQUEST).json(authenticationError);
+            console.error(error);
+            response.type('json').status(ERROR).json({});
             return;
         }
 
@@ -78,13 +79,17 @@ const logIn = (...args) =>
 
         if (loginProcessError)
         {
-            response.type('json').status(BAD_REQUEST).json(loginProcessError);
+            console.error(error);
+            response.type('json').status(ERROR).json({});
             return;
         }
 
         response.type('json').status(OK).json({});
 
-    })();
+    })().catch(error => {
+        console.error(error);
+        response.type('json').status(ERROR).json({});
+    });
 };
 
 const logOut = (request, response) =>

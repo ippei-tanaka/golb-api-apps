@@ -29,7 +29,7 @@ export const testPost = Object.freeze({
 export const settings = {
     webHost: "localhost",
     webPort: 3002,
-    dbName: "weblogjstest",
+    dbName: "golbrestapitest",
     adminEmail: admin.email,
     adminPassword: admin.password,
     adminDisplayName: admin.display_name,
