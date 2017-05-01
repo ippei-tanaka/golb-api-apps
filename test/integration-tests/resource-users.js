@@ -92,6 +92,24 @@ export default () =>
             expect(user).to.not.have.property('password');
         });
 
+        it('should send an error if the email is not valid', async () =>
+        {
+            let error;
+
+            try
+            {
+                await adminClient.post("/users", {...testUser, email: "or@ote.pe3"});
+            }
+            catch (e)
+            {
+                error = e;
+            }
+
+            console.log(error);
+
+            expect(error).to.have.property('password');
+        });
+
         it("should update a user's display name", async () =>
         {
             const {_id} = await adminClient.post("/users", testUser);

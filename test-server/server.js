@@ -2,18 +2,43 @@ import express from 'express';
 import {AdminApiApp, PublicApiApp} from '../src';
 import cors from 'cors';
 import path from 'path';
+import {URL} from 'url';
 
 let server;
 let app;
 let adminApiApp;
 let publicSiteApp;
 
+const corsOptions =
+{
+    origin: (origin, callback) =>
+    {
+        let url;
+
+        try {
+            url = new URL(origin);
+        } catch (e) {
+            throw e;
+        }
+
+        if (url.hostname === "localhost" || url.hostname === "127.0.0.1")
+        {
+            callback(null, true);
+        } else {
+            throw new Error(`${url} isn't allowed by CORS.`);
+        }
+    },
+
+    credentials: true
+};
+
 export const start = async (config) =>
 {
     if (!app)
     {
         app = express();
-        app.use(cors());
+        app.use(cors(corsOptions));
+        app.options('*', cors());
         app.use(express.static(path.resolve(__dirname, "static")));
     }
 
