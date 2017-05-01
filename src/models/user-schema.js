@@ -20,7 +20,10 @@ const schema = new SuperSchema({
             unique: true,
             required: true,
             type: types.String,
-            sanitize: (value) => validator.normalizeEmail(value),
+            sanitize: (value) => {
+                const email = validator.normalizeEmail(value);
+                return email ? email : value;
+            },
             validate: function* (value)
             {
                 if (!validator.isEmail(value))
