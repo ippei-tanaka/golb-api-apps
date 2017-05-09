@@ -1,5 +1,5 @@
 import {mongoDbBaseOperator, mongoDriver} from 'simple-odm';
-import {settings} from './_config';
+import config from './_config';
 import * as server from '../../test-server/server';
 
 describe('Integration Tests', function ()
@@ -7,15 +7,15 @@ describe('Integration Tests', function ()
     this.timeout(10000);
 
     mongoDriver.setUp({
-        database: settings.dbName
+        database: config.dbName
     });
 
     before('dropping database', mongoDbBaseOperator.dropDatabase);
-    before('web server stopping', () => server.stop(settings));
-    before('web server starting', () => server.start(settings));
+    before('web server stopping', () => server.stop(config));
+    before('web server starting', () => server.start(config));
     beforeEach('emptying collections', mongoDbBaseOperator.removeAllDocuments);
-    beforeEach('creating an admin', () => server.createAdmin(settings));
-    after('web server stopping', () => server.stop(settings));
+    beforeEach('creating an admin', () => server.createAdmin(config));
+    after('web server stopping', () => server.stop(config));
 
     require('./resource-home')();
     require('./resource-authentication')();

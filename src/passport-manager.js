@@ -3,23 +3,22 @@ import {Strategy as LocalStrategy} from 'passport-local';
 import {ObjectID} from 'mongodb';
 import UserModel from './models/user-model';
 
-passport.use(new LocalStrategy({usernameField: 'email'}, (email, password, done) => (async () =>
+passport.use(new LocalStrategy({usernameField: 'email'}, async (email, password, done) =>
 {
     const model = await UserModel.findOne({email});
 
     if (!model)
     {
-        return done();
+        return done(null, false, {message: "User not found"});
     }
 
     if (!(await model.checkPassword(password)))
     {
-        return done();
+        return done(null, false, {message: "Wrong password"});
     }
 
     return done(null, model.values);
-
-})().catch(e => console.error(e))));
+}));
 
 passport.serializeUser((user, done) =>
 {

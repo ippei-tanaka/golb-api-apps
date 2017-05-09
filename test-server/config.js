@@ -8,5 +8,6 @@ export default {
     adminSlug: "admin",
     sessionSecret: "hGSUDDsdsbyuuqiSA",
     adminApiRoot: "/admin-api",
-    publicApiRoot: "/public-api"
+    publicApiRoot: "/public-api",
+    cors: true
 };

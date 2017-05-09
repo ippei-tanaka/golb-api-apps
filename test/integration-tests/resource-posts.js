@@ -1,6 +1,7 @@
 import {expect} from 'chai';
 import HttpClient from '../http-client';
-import {testPost, admin, settings} from './_config';
+import config from './_config';
+import {admin, testPost} from './_data';
 
 export default () =>
 {
@@ -12,15 +13,15 @@ export default () =>
         beforeEach(() =>
         {
             adminClient = new HttpClient({
-                port: settings.webPort,
-                hostname: settings.webHost,
-                pathbase: settings.adminApiRoot
+                port: config.webPort,
+                hostname: config.webHost,
+                pathbase: config.adminApiRoot
             });
 
             publicClient = new HttpClient({
-                port: settings.webPort,
-                hostname: settings.webHost,
-                pathbase: settings.publicApiRoot
+                port: config.webPort,
+                hostname: config.webHost,
+                pathbase: config.publicApiRoot
             });
         });
 

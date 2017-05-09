@@ -37,8 +37,13 @@ export const start = async (config) =>
     if (!app)
     {
         app = express();
-        app.use(cors(corsOptions));
-        app.options('*', cors());
+
+        if (config.cors)
+        {
+            app.use(cors(corsOptions));
+            app.options('*', cors());
+        }
+
         app.use(express.static(path.resolve(__dirname, "static")));
     }
 
@@ -75,7 +80,7 @@ export const createAdmin = async (config = {}) =>
     }
 };
 
-export const stop = async (config) =>
+export const stop = async () =>
 {
     if (server)
     {

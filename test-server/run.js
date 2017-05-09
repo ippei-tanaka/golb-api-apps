@@ -16,4 +16,4 @@ const url = new URL(`http://${config.webHost}:${config.webPort}`);
 
     url.pathname = config.publicApiRoot;
     console.log(`${url.toString()} (Public API)`);
-})();
+})().catch((e = {}) => console.error(e.message || e));

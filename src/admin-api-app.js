@@ -42,53 +42,68 @@ const logIn = (...args) =>
 
     (async () =>
     {
-        const foundUser = await UserModel.findOne({email: request.body.email});
-
-        if (!foundUser)
-        {
-            response.type('json').status(BAD_REQUEST).json(new AuthenticationError({
-                email: [`The email , "${request.body.email}", is not registered.`]
-            }));
-            return;
-        }
-
-        const [authenticationError, authenticatedUser] = await new Promise((resolve) => {
-            PassportManager.authenticate((error, user) => {
-                resolve([error, user]);
+        const {error, user, errorMessage} = await new Promise((resolve) => {
+            PassportManager.authenticate((error, user, errorMessage) => {
+                resolve({error, user, errorMessage});
             })(...args);
         });
 
-        if (authenticationError)
+        if (error)
         {
-            console.error(error);
-            response.type('json').status(ERROR).json({});
+            response.type('json').status(ERROR).json(error);
             return;
         }
 
-        if (!authenticatedUser)
+        if (errorMessage)
         {
-            response.type('json').status(BAD_REQUEST).json(new AuthenticationError({
-                password: ["The submitted password is wrong."]
-            }));
-            return;
+            const {email, password} = request.body || {};
+
+            switch (errorMessage.message)
+            {
+                case "Missing credentials":
+                    const message = {};
+                    if (typeof email === "undefined" || email === "")
+                    {
+                        message.email = ["An email is required."];
+                    }
+                    if (typeof password === "undefined" || password === "")
+                    {
+                        message.password = ["A password is required."];
+                    }
+                    response.type('json').status(BAD_REQUEST).json(new AuthenticationError(message));
+                    return;
+
+                case "User not found":
+                    response.type('json').status(BAD_REQUEST).json(new AuthenticationError({
+                        email: [`The email , "${email}", is not registered.`]
+                    }));
+                    return;
+
+                case "Wrong password":
+                    response.type('json').status(BAD_REQUEST).json(new AuthenticationError({
+                        password: ["The submitted password is wrong."]
+                    }));
+                    return;
+
+                default:
+                    break;
+            }
         }
 
         const loginProcessError = await new Promise((resolve) => {
-            request.login(authenticatedUser, (error) => resolve(error));
+            request.login(user, (error) => resolve(error));
         });
 
         if (loginProcessError)
         {
-            console.error(error);
-            response.type('json').status(ERROR).json({});
+            response.type('json').status(ERROR).json(loginProcessError);
             return;
         }
 
         response.type('json').status(OK).json({});
 
     })().catch(error => {
-        console.error(error);
-        response.type('json').status(ERROR).json({});
+        response.type('json').status(ERROR).json(error);
     });
 };
 

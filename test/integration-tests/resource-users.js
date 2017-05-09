@@ -1,6 +1,7 @@
 import {expect} from 'chai';
 import HttpClient from '../http-client';
-import {testUser, admin, settings} from './_config';
+import config from './_config';
+import {admin, testUser} from './_data';
 
 export default () =>
 {
@@ -11,9 +12,9 @@ export default () =>
         beforeEach(() =>
         {
             adminClient = new HttpClient({
-                port: settings.webPort,
-                hostname: settings.webHost,
-                pathbase: settings.adminApiRoot
+                port: config.webPort,
+                hostname: config.webHost,
+                pathbase: config.adminApiRoot
             });
         });
 
@@ -105,9 +106,7 @@ export default () =>
                 error = e;
             }
 
-            console.log(error);
-
-            expect(error).to.have.property('password');
+            expect(error.body.message.email[0]).to.equal("A email should be a valid email.");
         });
 
         it("should update a user's display name", async () =>
