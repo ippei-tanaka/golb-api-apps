@@ -1,7 +1,7 @@
 export default {
     webHost: "localhost",
     webPort: 3000,
-    dbName: "golbrestapitest",
+    dbName: "golb-rest-api",
     adminEmail: "test@test.com",
     adminPassword: "password",
     adminDisplayName: "Admin",

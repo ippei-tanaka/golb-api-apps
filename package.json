@@ -13,7 +13,7 @@
     "url": "https://github.com/ippei-tanaka/golb-rest-api.git"
   },
   "scripts": {
-    "dev": "babel-node test-server/run.js",
+    "dev": "babel-node dev-server/run.js",
     "test": "mocha $(find test -name '*.test.js') --compilers js:babel-core/register",
     "compile": "NODE_ENV=production npm-run-all compile:*",
     "compile:clear": "rimraf dist",

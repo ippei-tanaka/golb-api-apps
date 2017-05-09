@@ -28,6 +28,7 @@ export default () =>
             expect(user.slug).to.equal(admin.slug);
             expect(user.display_name).to.equal(admin.display_name);
             expect(user).to.not.have.property('password');
+            expect(user).to.not.have.property('hashed_password');
         });
 
         it('should create a new user', async () =>

@@ -3,7 +3,7 @@ import {admin} from './_data';
 export default {
     webHost: "localhost",
     webPort: 3002,
-    dbName: "golbrestapitest",
+    dbName: "golb-rest-api-test",
     adminEmail: admin.email,
     adminPassword: admin.password,
     adminDisplayName: admin.display_name,

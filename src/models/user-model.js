@@ -17,4 +17,10 @@ export default class UserModel extends MongoModel {
         return compareHashedStrings(password, this.values.hashed_password);
     }
 
+    toJSON ()
+    {
+        const values = super.toJSON();
+        delete values.hashed_password;
+        return values;
+    }
 }
