@@ -288,5 +288,26 @@ export default () =>
                                                     .equal('The confirmed password sent is not the same as the new password.');
         });
 
+        it("should not allow a user to delete themselves", async () =>
+        {
+            let error;
+
+            try
+            {
+
+                const test = await adminClient.post("/users", testUser);
+                await adminClient.del(`/users/${test._id}`);
+
+                const me = await adminClient.get("users/me");
+                await adminClient.del(`/users/${me._id}`);
+            }
+            catch (e)
+            {
+                error = e;
+            }
+
+            expect(error.body.message[0]).to.equal("Deleting your own account is forbidden.");
+        });
+
     });
 };

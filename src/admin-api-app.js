@@ -173,8 +173,14 @@ const createRouterForCrudOperations = (Model) =>
         }
     }));
 
-    router.delete(`/${path}/:id`, isLoggedIn, respond(async (request) =>
+    router.delete(`/${path}/:id`, isLoggedIn, respond(async (request, response) =>
     {
+        if (Model === UserModel && request.params.id.toString() === request.user._id.toString())
+        {
+            response.type('json').status(BAD_REQUEST).json(new AuthorizationError(['Deleting your own account is forbidden.']));
+            return;
+        }
+
         await Model.deleteOne({_id: new ObjectID(request.params.id)});
     }));
 
