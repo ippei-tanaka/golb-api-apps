@@ -60,6 +60,12 @@ const getUsedCategories = async () =>
     });
 };
 
+
+const getSettings = async () =>
+{
+    return (await SettingModel.getSetting()).values;
+};
+
 const createMultiplePostsRouter = () =>
 {
     const router = Router();
@@ -183,6 +189,20 @@ const createUsedCategoriesRouter = () =>
     return router;
 };
 
+const createSettingsRouter = () =>
+{
+    const router = Router();
+
+    router.get(/^\/settings\/?$/,
+
+        async (request, response) =>
+        {
+            response.type('json').status(OK).send(await getSettings());
+        });
+
+    return router;
+};
+
 const createNotFoundRouter = () =>
 {
     const router = Router();
@@ -209,6 +229,7 @@ export default class PublicApiApp {
         app.use(createMultiplePostsRouter());
         app.use(createUsedCategoriesRouter());
         app.use(createSinglePostRouter());
+        app.use(createSettingsRouter());
         app.use(createNotFoundRouter());
 
         // adding class methods to the express app
