@@ -77,7 +77,7 @@ const createMultiplePostsRouter = () =>
             const categorySlug = parseParam(request.params[0], null);
             const authorSlug = parseParam(request.params[1], null);
             const tag = parseParam(request.params[2], null);
-            const page = parseParam(request.params[3], 1);
+            const page = Number.parseInt(parseParam(request.params[3], "1"));
 
             let _query = {
                 published_date: {$lt: new Date()},
@@ -139,6 +139,12 @@ const createMultiplePostsRouter = () =>
 
             response.type('json').status(OK).send({
                 posts: postModels.map(m => m.values),
+                currentPage: page,
+                prevPage,
+                nextPage,
+                category,
+                author,
+                tag,
                 prevPageLink: pageLinkBuilder({page: prevPage, category, author, tag}),
                 nextPageLink: pageLinkBuilder({page: nextPage, category, author, tag})
             });
