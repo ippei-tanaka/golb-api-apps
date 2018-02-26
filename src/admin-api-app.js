@@ -177,8 +177,7 @@ const createRouterForCrudOperations = (Model) =>
     {
         if (Model === UserModel && request.params.id.toString() === request.user._id.toString())
         {
-            response.type('json').status(BAD_REQUEST).json(new AuthorizationError(['Deleting your own account is forbidden.']));
-            return;
+            throw new AuthorizationError(['Deleting your own account is forbidden.']);
         }
 
         await Model.deleteOne({_id: new ObjectID(request.params.id)});
